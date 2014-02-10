@@ -24,13 +24,23 @@
 #------------------------------------------------------
 
 package NAC::DBBufSync;
-use lib "$ENV{HOME}/lib/perl5";
+
+Readonly our $USE_SNMP => 0;
+BEGIN {
+	use FindBin;
+	use lib "$FindBin::Bin/../lib";
+    if ($USE_SNMP) {
+        use NAC::SNMP;
+    }
+}
+
+# use lib "$ENV{HOME}/lib/perl5";
 
 use base qw( Exporter );
 use Readonly;
 use Data::Dumper;
 use Sys::Syslog qw(:standard :macros);
-use Carp qw(confess cluck);
+use Carp;
 use DBD::mysql;
 use NAC::Syslog;
 use NAC::DBConsts;
@@ -45,13 +55,7 @@ use NAC::DBRadiusAudit;
 use NAC::Misc;
 use strict;
 
-Readonly our $USE_SNMP => 0;
 
-BEGIN {
-    if ($USE_SNMP) {
-        use NACSNMP;
-    }
-}
 
 Readonly our $NACDB                   => 'NAC-DATABASE-MAIN';
 Readonly our $NACRO                   => 'NAC-DATABASE-LOCAL';
@@ -75,7 +79,7 @@ Readonly our $SWITCH_LS_SEND_TIME     => 'SWITCH-LS-SEND-TIME';
 Readonly our $SWITCHPORT_LS_SEND_TIME => 'SWITCHPORT-LS-SEND-TIME';
 
 my ($VERSION) = '$Revision: 1750 $:' =~ m{ \$Revision:\s+(\S+) }x;
-my $hostname = NACSyslog::hostname;
+my $hostname = NAC::Syslog::hostname;
 
 #---------------------------------------------------------------------------
 #
@@ -301,12 +305,12 @@ sub connect_db {
     my ( $self, $db ) = @_;
 
     my %db_package = (
-        $NACDB          => 'NACDBAudit',
-        $NACRO          => 'NACDBReadOnly',
-        $NACBUFFER      => 'NACDBBuffer',
-        $NACSTATUS      => 'NACDBStatus',
-        $NACEVENTLOG    => 'NACDBEventlog',
-        $NACRADIUSAUDIT => 'NACDBRadiusAudit',
+        $NACDB          => 'NAC::DBAudit',
+        $NACRO          => 'NAC::DBReadOnly',
+        $NACBUFFER      => 'NAC::DBBuffer',
+        $NACSTATUS      => 'NAC::DBStatus',
+        $NACEVENTLOG    => 'NAC::DBEventlog',
+        $NACRADIUSAUDIT => 'NAC::DBRadiusAudit',
     );
 
     EventLog( EVENT_START, MYNAME . "DB: $db" );

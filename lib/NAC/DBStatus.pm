@@ -20,7 +20,9 @@
 #------------------------------------------------------
 
 package NAC::DBStatus;
-use lib "$ENV{HOME}/lib/perl5";
+#use lib "$ENV{HOME}/lib/perl5";
+use FindBin;
+use lib "$FindBin::Bin/../lib";
 use Readonly;
 use Data::Dumper;
 use Sys::Syslog qw(:standard :macros);

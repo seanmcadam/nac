@@ -17,7 +17,9 @@
 #------------------------------------------------------
 
 package NAC::DB2;
-use lib "$ENV{HOME}/lib/perl5";
+# use lib "$ENV{HOME}/lib/perl5";
+use FindBin;
+use lib "$FindBin::Bin/../lib";
 use version;
 our $VERSION = "3.0";
 my ($minor_version) = '$Revision: 1751 $:' =~ m{ \$Revision:\s+(\S+) }x;

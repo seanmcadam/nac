@@ -12,6 +12,8 @@
 # look at subroutine usage() near the end of this file.
 # 
 
+use FindBin;
+use lib "$FindBin::Bin/../lib/perl5";
 use strict;
 use Getopt::Long;
 use NAC::ConfigDB;

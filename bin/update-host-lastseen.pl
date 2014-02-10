@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+use FindBin;
+use lib "$FindBin::Bin/../lib/perl5";
 use Data::Dumper;
 use Carp;
 use NAC::Syslog;

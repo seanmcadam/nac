@@ -16,8 +16,9 @@
 #------------------------------------------------------
 
 package NAC::DBRadiusAudit;
-use lib "$ENV{HOME}/lib/perl5";
-
+#use lib "$ENV{HOME}/lib/perl5";
+use FindBin;
+use lib "$FindBin::Bin/../lib";
 use base qw( Exporter );
 use Readonly;
 use Data::Dumper;
@@ -50,7 +51,10 @@ sub new() {
     EventLog( EVENT_START, MYNAME . "() started" );
 
     my %parms  = ();
-    my $config = NAC::ConfigDB->new();
+    my $config;
+    if( ! $config = NAC::ConfigDB->new() ) {
+	confess "Config DB not available\n";
+	}
 
     # For backward compatibility
     $parms{$SQL_DB}        = ( defined $parm_ref->{$SQL_DB} )        ? $parm_ref->{$SQL_DB}        : $config->nac_radiusaudit_write_db;

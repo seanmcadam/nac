@@ -13,7 +13,10 @@
 #
 
 package NAC::ConfigDB;
-use lib "$ENV{HOME}/lib/perl5";
+
+#use lib "$ENV{HOME}/lib/perl5";
+use FindBin;
+use lib "$FindBin::Bin/../lib";
 use base qw( Exporter );
 use Readonly;
 use Data::Dumper;
@@ -114,19 +117,30 @@ my $DBH;
 sub new {
     my $class = shift;
 
-    my $homedir = '';
+    my $ret = 0;
 
     # EventLog( EVENT_INFO, MYNAMELINE . " called" );
 
     my $self = {};
 
-    bless $self, $class;
+    eval {
+        if ( _connect() ) {
+            $self->_read_db;
+            _disconnect();
+            $ret++;
+        }
+    };
+    if ($@) {
+        LOGEVALFAIL();
+        return 0;
+    }
 
-    _connect();
-    $self->_read_db;
-    _disconnect();
+    if ($ret) {
+        bless $self, $class;
+        $self;
+    }
 
-    $self;
+    $ret;
 }
 
 sub DESTROY {
@@ -230,7 +244,7 @@ sub _connect {
                     $mysql_pass,
                     { PrintError => 1, RaiseError => 1, AutoCommit => 1 } ) ) )
         {
-            confess "Cannot open DB for config, $DBI::errstr\n"
+            carp "Cannot open DB for config, $DBI::errstr\n"
               . "db:$mysql_db\n"
               . "host:$mysql_host\n"
               . "port:$mysql_port\n"
@@ -238,14 +252,16 @@ sub _connect {
               . "pass:$mysql_pass\n"
               ;
         }
+        else {
 
-        # $DBH->{mysql_auto_reconnect} = $AutoReconnect ? 1 : 0;
-        $ret++;
+            # $DBH->{mysql_auto_reconnect} = $AutoReconnect ? 1 : 0;
+            $ret++;
+        }
 
     };
     if ($@) {
         LOGEVALFAIL();
-        confess MYNAMELINE . " CONFIG DB UNAVAILABLE...\n$@";
+        carp MYNAMELINE . " CONFIG DB UNAVAILABLE...\n$@";
     }
 
     $ret;

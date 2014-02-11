@@ -1,6 +1,26 @@
 
-Data::Dumper - Used for debugging
 
 Infoblox - used to access infoblox perl API
 Radius::AuthGeneric - Radiator module used in conjuntion with radiator to perform authentications
+
+
+Inputs
+--------------------------------------------------------
+Locations - Consists of a Site and A Building ID
+	A unique location ID is generated for each Site and Building
+	LocationIDs are used with switches and VLANs to tag thier location
+	A location is more or less a layer-3 boundry.
+	
+Switches (hosts) - input of switches (hostname, IPs, location-site,bldg)
+	Each switch it assinged a unique ID when added, from that point forward the IP address is the unique reference when updating it
+
+
+VLANs - a specific network boundy at one location, there can be several IP address ranges in the VLAN which would result in multiple entries
+	Each vlan is associated with each switch at a location that supports the vlan
+
+
+VlanGroups - A collection of vlans
+
+Templates - A collection of vlangroups
+
 

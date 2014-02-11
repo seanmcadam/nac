@@ -1,0 +1,2 @@
+*/5 * * * * root /{home}/nac/bin/auditrollup.pl >/tmp/auditrollup.pl 2>&1
+

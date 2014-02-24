@@ -127,33 +127,24 @@ my ($VERSION) = '$Revision: 1750 $:' =~ m{ \$Revision:\s+(\S+) }x;
 sub new {
     my ( $class, $parm_ref ) = @_;
     my $self;
+    my @local_msg_buffer = ();
 
     if ( ( defined $parm_ref ) && ( ref($parm_ref) ne 'HASH' ) ) { confess; }
 
     EventLog( EVENT_START, MYNAME . "() started" );
 
-    eval {
+    my %parms = ();
 
-        my %parms = ();
+    my $config = NAC::ConfigDB->new() || return 0;
 
-        my $config = NAC::ConfigDB->new();
+    $parms{$SQL_DB}    = $config->nac_local_buffer_db;
+    $parms{$SQL_HOST}  = $config->nac_local_buffer_hostname;
+    $parms{$SQL_PORT}  = $config->nac_local_buffer_port;
+    $parms{$SQL_USER}  = $config->nac_local_buffer_user;
+    $parms{$SQL_PASS}  = $config->nac_local_buffer_pass;
+    $parms{$SQL_CLASS} = $class;
 
-        $parms{$SQL_DB}    = $config->nac_local_buffer_db;
-        $parms{$SQL_HOST}  = $config->nac_local_buffer_hostname;
-        $parms{$SQL_PORT}  = $config->nac_local_buffer_port;
-        $parms{$SQL_USER}  = $config->nac_local_buffer_user;
-        $parms{$SQL_PASS}  = $config->nac_local_buffer_pass;
-        $parms{$SQL_CLASS} = $class;
-
-        $self = $class->SUPER::new( \%parms );
-
-    };
-    if ($@) {
-        LOGEVALFAIL();
-        confess( MYNAMELINE . "$@" );
-    }
-
-    my @local_msg_buffer = ();
+    $self = $class->SUPER::new( \%parms );
 
     $self->{$BUF_CLIENT} = undef;
     $self->{$BUF_SERVER} = undef;

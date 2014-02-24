@@ -22,13 +22,14 @@ use Data::Dumper;
 use Sys::Hostname;
 use DBD::mysql;
 use Data::Dumper;
-use Carp qw(confess cluck);
+use Carp qw(confess cluck carp);
 use NAC::Syslog;
 
 use strict;
 no strict 'subs';
 
-NAC::Syslog::ActivateDebug();
+# NAC::Syslog::ActivateDebug();
+NAC::Syslog::DeactivateDebug();
 NAC::Syslog::ActivateSyslog();
 NAC::Syslog::ActivateStdout();
 
@@ -118,7 +119,7 @@ sub new {
 
     my $ret = 0;
 
-    # EventLog( EVENT_INFO, MYNAMELINE . " called" );
+    EventLog( EVENT_DEBUG, MYNAMELINE . " called" );
 
     my $self = {};
 
@@ -130,13 +131,15 @@ sub new {
         }
     };
     if ($@) {
-        LOGEVALFAIL();
+
+        # LOGEVALFAIL();
+        warn MYNAME . " Cannot Connect to Config DB\n";
         return 0;
     }
 
     if ($ret) {
         bless $self, $class;
-        $self;
+        return $self;
     }
 
     $ret;
@@ -220,7 +223,7 @@ sub _disconnect {
 }
 
 sub _connect {
-    my $ret;
+    my $ret = 0;
 
     my $mysql_db   = $CONFIG_NACCONFIGDB;
     my $mysql_host = $CONFIG_HOST;
@@ -259,8 +262,10 @@ sub _connect {
 
     };
     if ($@) {
-        LOGEVALFAIL();
-        carp MYNAMELINE . " CONFIG DB UNAVAILABLE...\n$@";
+
+        # LOGEVALFAIL();
+        warn MYNAMELINE . " CONFIG DB UNAVAILABLE...\n$@";
+        $ret = 0;
     }
 
     $ret;

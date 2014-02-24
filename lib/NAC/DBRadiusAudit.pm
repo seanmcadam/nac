@@ -49,11 +49,11 @@ sub new() {
 
     EventLog( EVENT_START, MYNAME . "() started" );
 
-    my %parms  = ();
+    my %parms = ();
     my $config;
-    if( ! $config = NAC::ConfigDB->new() ) {
-	confess "Config DB not available\n";
-	}
+    if ( !( $config = NAC::ConfigDB->new() ) ) {
+        confess "Config DB not available\n";
+    }
 
     # For backward compatibility
     $parms{$SQL_DB}        = ( defined $parm_ref->{$SQL_DB} )        ? $parm_ref->{$SQL_DB}        : $config->nac_radiusaudit_write_db;

@@ -15,9 +15,19 @@ NAC::Syslog::ActivateDebug();
 NAC::Syslog::DeactivateStdout();
 NAC::Syslog::ActivateStdout();
 
-become_daemon();
+my $bufsync;
 
-my $bufsync = NAC::DBBufSync->new();
+if(!( $bufsync = NAC::DBBufSync->new() )){
+	EventLog( EVENT_ERR, "No DBBufSync Object, $0 Exiting" );
+	exit;
+}
+	
+if( ! ($bufsync->BUF) ) {
+	EventLog( EVENT_WARN, "DBBufSync DB not available, $0 Exiting" );
+	exit;
+	}
+
+become_daemon();
 
 $bufsync->server_buf_loop();
 EventLog( EVENT_INFO, "$0 Exiting" );

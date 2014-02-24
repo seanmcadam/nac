@@ -110,31 +110,23 @@ sub new {
     my $ro      = $sql_parm_ref->{$SQL_READ_ONLY};
     my $myclass = $sql_parm_ref->{$SQL_CLASS};
 
-    eval {
-
-        $self = {
-            $SQL_NO_CONNECT_FAIL => ( defined $fail ) ? 1 : 0,
-            $SQL_READ_ONLY => ( defined $ro && $ro ) ? 1 : 0,
-            $SQL_VERSION   => $VERSION,
-            $SQL_ERR       => 0,
-            $SQL_ERRSTR    => '',
-            $SQL_DBH       => undef,
-            $SQL_STH       => undef,
-            $SQL_CONNECTED => 0,
-            $SQL_RECONTIME => 0,
-            $SQL_DB        => $db,
-            $SQL_HOST      => $host,
-            $SQL_PORT      => $port,
-            $SQL_USER      => $user,
-            $SQL_PASS      => $pass,
-            $SQL_CLASS     => $myclass,
-        };
-
+    $self = {
+        $SQL_NO_CONNECT_FAIL => ( defined $fail ) ? 1 : 0,
+        $SQL_READ_ONLY => ( defined $ro && $ro ) ? 1 : 0,
+        $SQL_VERSION   => $VERSION,
+        $SQL_ERR       => 0,
+        $SQL_ERRSTR    => '',
+        $SQL_DBH       => undef,
+        $SQL_STH       => undef,
+        $SQL_CONNECTED => 0,
+        $SQL_RECONTIME => 0,
+        $SQL_DB        => $db,
+        $SQL_HOST      => $host,
+        $SQL_PORT      => $port,
+        $SQL_USER      => $user,
+        $SQL_PASS      => $pass,
+        $SQL_CLASS     => $myclass,
     };
-    if ($@) {
-        LOGEVALFAIL();
-        confess( MYNAMELINE . "$@" );
-    }
 
     bless $self, $class;
 

@@ -25,17 +25,18 @@
 
 package NAC::DBBufSync;
 
+use Readonly;
 Readonly our $USE_SNMP => 0;
+
 BEGIN {
-	use FindBin;
-	use lib "$FindBin::Bin/../lib";
+    use FindBin;
+    use lib "$FindBin::Bin/../lib";
     if ($USE_SNMP) {
         use NAC::SNMP;
     }
 }
 
 use base qw( Exporter );
-use Readonly;
 use Data::Dumper;
 use Sys::Syslog qw(:standard :macros);
 use Carp;
@@ -52,8 +53,6 @@ use NAC::DBEventlog;
 use NAC::DBRadiusAudit;
 use NAC::Misc;
 use strict;
-
-
 
 Readonly our $NACDB                   => 'NAC-DATABASE-MAIN';
 Readonly our $NACRO                   => 'NAC-DATABASE-LOCAL';
@@ -88,40 +87,43 @@ sub new() {
 
     if ( ( defined $parm_ref ) && ( ref($parm_ref) ne 'HASH' ) ) { confess; }
 
-    EventLog( EVENT_START, MYNAME . "() started" );
+    EventLog( EVENT_START, MYNAME . "() starting" );
 
-    eval {
-
-        my %macls;
-        my %switchls;
-        my %switchportls;
-        my %locationls;
-        $self = {
-            $SNMPCONN                => undef,
-            $SNMPOK                  => 0,
-            $NACDB                   => undef,
-            $NACRO                   => undef,
-            $NACBUFFER               => undef,
-            $NACSTATUS               => undef,
-            $NACEVENTLOG             => undef,
-            $NACRADIUSAUDIT          => undef,
-            $HOST_LS_SEND_TIME       => undef,
-            $HOST_LS_SLAVE_CHECKIN   => undef,
-            $MAC_LS_SEND_TIME        => \%macls,
-            $SWITCH_LS_SEND_TIME     => \%switchls,
-            $SWITCHPORT_LS_SEND_TIME => \%switchportls,
-            $LOCATION_LS_SEND_TIME   => \%locationls,
-            $RUN_NEXT_LS_LOOP        => 0,
-            $RUN_NEXT_SYNC_LOOP      => 0,
-        };
-
+    my %macls;
+    my %switchls;
+    my %switchportls;
+    my %locationls;
+    $self = {
+        $SNMPCONN                => undef,
+        $SNMPOK                  => 0,
+        $NACDB                   => undef,
+        $NACRO                   => undef,
+        $NACBUFFER               => undef,
+        $NACSTATUS               => undef,
+        $NACEVENTLOG             => undef,
+        $NACRADIUSAUDIT          => undef,
+        $HOST_LS_SEND_TIME       => undef,
+        $HOST_LS_SLAVE_CHECKIN   => undef,
+        $MAC_LS_SEND_TIME        => \%macls,
+        $SWITCH_LS_SEND_TIME     => \%switchls,
+        $SWITCHPORT_LS_SEND_TIME => \%switchportls,
+        $LOCATION_LS_SEND_TIME   => \%locationls,
+        $RUN_NEXT_LS_LOOP        => 0,
+        $RUN_NEXT_SYNC_LOOP      => 0,
     };
-    if ($@) {
-        LOGEVALFAIL();
-        confess( MYNAMELINE . "$@" );
-    }
 
     bless $self, $class;
+
+    if ( !( $self->init_db($NACDB)
+            && $self->init_db($NACRO)
+            && $self->init_db($NACBUFFER)
+            && $self->init_db($NACSTATUS)
+            && $self->init_db($NACEVENTLOG)
+            && $self->init_db($NACRADIUSAUDIT)
+        ) ) {
+        warn "Count not initialize on of the database connections\n";
+        return undef;
+    }
 
     $self;
 }
@@ -129,23 +131,67 @@ sub new() {
 #-------------------------------------------------------
 #
 #-------------------------------------------------------
-sub MAINDB {
-    my ($self) = @_;
-
-    EventLog( EVENT_INFO, MYNAMELINE . " Called" );
-
-    if ( !defined( $self->{$NACDB} ) ) {
-        if ( !( $self->connect_db($NACDB) ) ) {
-            EventLog( EVENT_WARN, MYNAMELINE . "Failed to connect to DB" );
-            return undef;
-        }
+sub init_db {
+    my ( $self, $dbname ) = @_;
+    EventLog( EVENT_DEBUG, MYNAMELINE . " Called" );
+    if ( defined( $self->{$dbname} ) ) {
+        EventLog( EVENT_WARN, "DB alread setup: $dbname" );
+    }
+    elsif ( !( $self->connect_db($dbname) ) ) {
+        EventLog( EVENT_WARN, "Failed to connect to DB: $dbname" );
+        return 0;
     }
 
-    #if ( !( $self->{$NACDB}->sql_connected ) ) {
-    $self->{$NACDB}->connect;
+    return $self->{$dbname};
 
-    #}
+}
 
+#-------------------------------------------------------
+#
+#-------------------------------------------------------
+sub connect_db {
+    my ( $self, $db ) = @_;
+
+    my %db_package = (
+        $NACDB          => 'NAC::DBAudit',
+        $NACRO          => 'NAC::DBReadOnly',
+        $NACBUFFER      => 'NAC::DBBuffer',
+        $NACSTATUS      => 'NAC::DBStatus',
+        $NACEVENTLOG    => 'NAC::DBEventlog',
+        $NACRADIUSAUDIT => 'NAC::DBRadiusAudit',
+    );
+
+    EventLog( EVENT_START, MYNAME . "DB: $db" );
+
+    if ( !defined $db_package{$db} ) { confess Dumper @_; }
+
+    eval {
+        if ( !defined $self->{$db} ) {
+            if ( !( $self->{$db} = "$db_package{$db}"->new() ) ) {
+                return 0;
+            }
+        }
+
+        if ( !$self->{$db}->sql_connected() ) {
+            if ( !$self->{$db}->connect ) {
+                return 0;
+            }
+        }
+    };
+    if ($@) {
+        LOGEVALFAIL();
+        carp( MYNAMELINE . "$@" );
+        return 0;
+    }
+
+    return $self->{$db};
+}
+
+#-------------------------------------------------------
+#
+#-------------------------------------------------------
+sub MAINDB {
+    my ($self) = @_;
     return $self->{$NACDB};
 }
 
@@ -154,21 +200,6 @@ sub MAINDB {
 #-------------------------------------------------------
 sub LOCALRO {
     my ($self) = @_;
-
-    EventLog( EVENT_DEBUG, MYNAMELINE . " Called" );
-
-    if ( !defined( $self->{$NACRO} ) ) {
-        if ( !( $self->connect_db($NACRO) ) ) {
-            EventLog( EVENT_WARN, MYNAMELINE . "Failed to connect to DB" );
-            return undef;
-        }
-    }
-
-    #if ( !( $self->{$NACRO}->sql_connected ) ) {
-    $self->{$NACRO}->connect;
-
-    #}
-
     return $self->{$NACRO};
 }
 
@@ -177,21 +208,6 @@ sub LOCALRO {
 #-------------------------------------------------------
 sub BUF {
     my ($self) = @_;
-
-    EventLog( EVENT_DEBUG, MYNAMELINE . " Called" );
-
-    if ( !defined( $self->{$NACBUFFER} ) ) {
-        if ( !( $self->connect_db($NACBUFFER) ) ) {
-            EventLog( EVENT_WARN, MYNAMELINE . "Failed to connect to DB" );
-            return undef;
-        }
-    }
-
-    #if ( !$self->{$NACBUFFER}->sql_connected() ) {
-    $self->{$NACBUFFER}->connect;
-
-    #}
-
     return $self->{$NACBUFFER};
 }
 
@@ -200,21 +216,6 @@ sub BUF {
 #-------------------------------------------------------
 sub STATUS {
     my ($self) = @_;
-
-    EventLog( EVENT_DEBUG, MYNAMELINE . " Called" );
-
-    if ( !defined( $self->{$NACSTATUS} ) ) {
-        if ( !( $self->connect_db($NACSTATUS) ) ) {
-            EventLog( EVENT_WARN, MYNAMELINE . "Failed to connect to DB" );
-            return undef;
-        }
-    }
-
-    #if ( !$self->{$NACSTATUS}->sql_connected() ) {
-    $self->{$NACSTATUS}->connect;
-
-    #}
-
     return $self->{$NACSTATUS};
 }
 
@@ -223,21 +224,6 @@ sub STATUS {
 #-------------------------------------------------------
 sub EL {
     my ($self) = @_;
-
-    EventLog( EVENT_DEBUG, MYNAMELINE . " Called" );
-
-    if ( !defined( $self->{$NACEVENTLOG} ) ) {
-        if ( !( $self->connect_db($NACEVENTLOG) ) ) {
-            EventLog( EVENT_WARN, MYNAMELINE . "Failed to connect to DB" );
-            return undef;
-        }
-    }
-
-    #if ( !$self->{$NACEVENTLOG}->sql_connected() ) {
-    $self->{$NACEVENTLOG}->connect;
-
-    #}
-
     return $self->{$NACEVENTLOG};
 }
 
@@ -246,21 +232,6 @@ sub EL {
 #-------------------------------------------------------
 sub RA {
     my ($self) = @_;
-
-    EventLog( EVENT_DEBUG, MYNAMELINE . " Called" );
-
-    if ( !defined( $self->{$NACRADIUSAUDIT} ) ) {
-        if ( !( $self->connect_db($NACRADIUSAUDIT) ) ) {
-            EventLog( EVENT_WARN, MYNAMELINE . "Failed to connect to DB" );
-            return undef;
-        }
-    }
-
-    #if ( !$self->{$NACRADIUSAUDIT}->sql_connected() ) {
-    $self->{$NACRADIUSAUDIT}->connect;
-
-    #}
-
     return $self->{$NACRADIUSAUDIT};
 }
 
@@ -294,47 +265,6 @@ sub SNMP {
     }
 
     return $self->{$SNMPCONN};
-}
-
-#-------------------------------------------------------
-#
-#-------------------------------------------------------
-sub connect_db {
-    my ( $self, $db ) = @_;
-
-    my %db_package = (
-        $NACDB          => 'NAC::DBAudit',
-        $NACRO          => 'NAC::DBReadOnly',
-        $NACBUFFER      => 'NAC::DBBuffer',
-        $NACSTATUS      => 'NAC::DBStatus',
-        $NACEVENTLOG    => 'NAC::DBEventlog',
-        $NACRADIUSAUDIT => 'NAC::DBRadiusAudit',
-    );
-
-    EventLog( EVENT_START, MYNAME . "DB: $db" );
-
-    if ( !defined $db_package{$db} ) { confess Dumper @_; }
-
-    eval {
-        if ( !defined $self->{$db} ) {
-            if ( !( $self->{$db} = "$db_package{$db}"->new() ) ) {
-                return undef;
-            }
-        }
-
-        if ( !$self->{$db}->sql_connected() ) {
-            if ( !$self->{$db}->connect ) {
-                return undef;
-            }
-        }
-    };
-    if ($@) {
-        LOGEVALFAIL();
-        carp( MYNAMELINE . "$@" );
-        return undef;
-    }
-
-    return $self->{$db};
 }
 
 #-------------------------------------------------------

@@ -43,10 +43,10 @@ sub new() {
 
     EventLog( EVENT_START, MYNAME . "() started" );
 
-    eval {
-        my %parms  = ();
-        my $config = NAC::ConfigDB->new();
+    my %parms = ();
+    my $config = NAC::ConfigDB->new() || return 0;
 
+    if ($config) {
         $parms{$SQL_DB}        = $config->nac_local_readonly_db;
         $parms{$SQL_HOST}      = $config->nac_local_readonly_hostname;
         $parms{$SQL_PORT}      = $config->nac_local_readonly_port;
@@ -56,13 +56,15 @@ sub new() {
         $parms{$SQL_CLASS}     = $class;
 
         $self = $class->SUPER::new( \%parms );
+    }
+    else {
 
-    };
-    if ($@) {
-        LOGEVALFAIL();
-        confess( MYNAMELINE . "$@" );
+        EventLog( EVENT_ERR, MYNAME . "() cannot open config DB" );
+        return 0;
     }
 
     bless $self, $class;
+
+    $self;
 }
 

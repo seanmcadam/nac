@@ -195,6 +195,11 @@ Readonly our $CISCO_MAC_AUTH_UNAUTHORIZED  => 2;
 
 Readonly our $SNMP_OID_VLAN_INFO => '.1.3.6.1.2.1.47.1.2.1.1.2';
 
+Readonly our $SNMP_SESSION   => 'NAC::SNMP_SESSION';
+Readonly our $SNMP_HOSTNAME  => 'NAC::SNMP_HOSTNAME';
+Readonly our $SNMP_COMMUNITY => 'NAC::SNMP_COMMUNICATY';
+Readonly our $SNMP_PORT      => 'NAC::SNMP_PORT';
+
 our @EXPORT = qw (
   $SNMP_HOSTNAME
   $SNMP_COMMUNITY
@@ -213,16 +218,21 @@ our @EXPORT = qw (
 );
 
 my $snmp_string;
-my $snmp_host;
-my $snmp_port;
 
-BEGIN {
-    my $config = NAC::ConfigDB->new();
-    $snmp_string = $config->nac_switch_snmp_string;
+#BEGIN {
+{
+    my $config;
+    if ( !( $config = NAC::ConfigDB->new() ) ) {
+        warn "NAC::SNMP Cannot open ConfigDB\n";
+    }
+    else {
+        $snmp_string = $config->nac_switch_snmp_string;
+    }
 }
 
 #---------------------------------------------------------------------------
 #---------------------------------------------------------------------------
+# new() expects host and port to be fed in via parameter
 #---------------------------------------------------------------------------
 sub new {
     my ( $class, $ref ) = @_;

@@ -62,26 +62,18 @@ sub new {
 
     EventLog( EVENT_START, MYNAME . "() started" );
 
-    eval {
+    my %parms = ();
 
-        my %parms = ();
+    my $config = NAC::ConfigDB->new() || return 0;
 
-        my $config = NAC::ConfigDB->new();
+    $parms{$SQL_DB}    = $config->nac_master_status_db;
+    $parms{$SQL_HOST}  = $config->nac_master_status_hostname;
+    $parms{$SQL_PORT}  = $config->nac_master_status_port;
+    $parms{$SQL_USER}  = $config->nac_master_status_user;
+    $parms{$SQL_PASS}  = $config->nac_master_status_pass;
+    $parms{$SQL_CLASS} = $class;
 
-        $parms{$SQL_DB}    = $config->nac_master_status_db;
-        $parms{$SQL_HOST}  = $config->nac_master_status_hostname;
-        $parms{$SQL_PORT}  = $config->nac_master_status_port;
-        $parms{$SQL_USER}  = $config->nac_master_status_user;
-        $parms{$SQL_PASS}  = $config->nac_master_status_pass;
-        $parms{$SQL_CLASS} = $class;
-
-        $self = $class->SUPER::new( \%parms );
-
-    };
-    if ($@) {
-        LOGEVALFAIL();
-        confess( MYNAMELINE . "$@" );
-    }
+    $self = $class->SUPER::new( \%parms );
 
     bless $self, $class;
 

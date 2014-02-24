@@ -47,7 +47,9 @@ sub audit_daily_rollup() {
     my @d;
     my $db;
 
-    $db = NAC::DBRadiusAudit->new();
+    if ( !( $db = NAC::DBRadiusAudit->new() ) ) {
+        confess "Cannot open DBRadiusAudit\n";
+    }
 
     my $t = time() - ( ( 24 * 60 * 60 ) * ($DAYOFFSET) );
 

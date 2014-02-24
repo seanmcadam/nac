@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use FindBin;
-use lib "$FindBin::Bin/../lib/perl5";
+use lib "$FindBin::Bin/../lib";
 use Data::Dumper;
 use Carp;
 use NAC::Audit;

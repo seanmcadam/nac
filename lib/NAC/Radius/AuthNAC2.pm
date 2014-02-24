@@ -31,8 +31,6 @@ package NAC::Radius::AuthNAC2;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 
-# use lib "$ENV{HOME}/lib/perl5";
-
 @ISA = qw(Radius::AuthGeneric);
 use Radius::AuthGeneric;
 use POSIX;

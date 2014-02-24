@@ -34,8 +34,6 @@ BEGIN {
     }
 }
 
-# use lib "$ENV{HOME}/lib/perl5";
-
 use base qw( Exporter );
 use Readonly;
 use Data::Dumper;

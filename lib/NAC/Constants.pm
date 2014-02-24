@@ -12,7 +12,6 @@
 #
 
 package NAC::Constants;
-#use lib "$ENV{HOME}/lib/perl5";
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use base qw( Exporter );

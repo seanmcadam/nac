@@ -13,7 +13,7 @@
 # 
 
 use FindBin;
-use lib "$FindBin::Bin/../lib/perl5";
+use lib "$FindBin::Bin/../lib";
 use strict;
 use Getopt::Long;
 use NAC::ConfigDB;

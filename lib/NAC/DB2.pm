@@ -1637,7 +1637,7 @@ sub add_vlan($$) {
     $name =~ s/^-//g;
     $name =~ s/^ //g;
 
-    $sql = "INSERT INTO $DB_TABLE_VLAN ( locationid, vlan, type, cidr, coe,"
+    $sql = "INSERT INTO $DB_TABLE_VLAN ( locationid, vlan, type, cidr, coe"
       . ( ( $name  ne '' ) ? ", vlanname" : "" )
       . ( ( $nacip ne '' ) ? ", nacip"    : "" )
       . " ) VALUES ( $locid, $vlan, '$type', '$cidr', $coe"

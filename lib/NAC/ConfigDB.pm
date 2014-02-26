@@ -23,6 +23,7 @@ use Sys::Hostname;
 use DBD::mysql;
 use Data::Dumper;
 use Carp qw(confess cluck carp);
+use Env qw(HOME);
 use NAC::Syslog;
 
 use strict;
@@ -33,11 +34,22 @@ NAC::Syslog::DeactivateDebug();
 NAC::Syslog::ActivateSyslog();
 NAC::Syslog::ActivateStdout();
 
-Readonly our $CONFIG_NACCONFIGDB => 'nacconfig';
-Readonly our $CONFIG_HOST        => 'localhost';
-Readonly our $CONFIG_PORT        => 3306;
-Readonly our $CONFIG_USERID      => 'nacconfig';
-Readonly our $CONFIG_PASSWORD    => '*** some default password ***';
+Readonly our $DEFAULT_NACCONFIGDB => 'nacconfig';
+Readonly our $DEFAULT_NACHOST     => 'localhost';
+Readonly our $DEFAULT_NACPORT     => 3306;
+Readonly our $DEFAULT_NACUSER     => 'nacconfig';
+Readonly our $DEFAULT_NACPASS     => '*** some default password ***';
+Readonly our $NACRC_FILENAME      => '.nacconfig';
+Readonly our $NACRC_HOST          => 'HOST';
+Readonly our $NACRC_PORT          => 'PORT';
+Readonly our $NACRC_PASS          => 'PASS';
+Readonly our $NACRC_USER          => 'USER';
+Readonly our $NACRC_CONFIGDB      => 'DB';
+Readonly our $NACCONFIGDB         => 'NAC-CONFIG-DB';
+Readonly our $NACHOST             => 'NAC-CONFIG-HOST';
+Readonly our $NACPORT             => 'NAC-CONFIG-PORT';
+Readonly our $NACUSER             => 'NAC-CONFIG-USER';
+Readonly our $NACPASS             => 'NAC-CONFIG-PASS';
 
 Readonly our $NAC_MASTER_WRITE_HOSTNAME      => 'NAC_MASTER_WRITE_HOSTNAME';
 Readonly our $NAC_MASTER_WRITE_PORT          => 'NAC_MASTER_WRITE_PORT';
@@ -122,11 +134,60 @@ sub new {
     EventLog( EVENT_DEBUG, MYNAMELINE . " called" );
 
     my $self = {};
+    bless $self, $class;
+
+    # Open .nacconfig
+
+    my $config_file = $HOME . '/' . $NACRC_FILENAME;
+    if ( open( NACCONFIG, $config_file ) ) {
+        while (<NACCONFIG>) {
+            chop;
+            my $line = $_;
+            my ( $n, $v );
+            if ( ( $n, $v ) = split( '=', $line ) ) {
+                $n =~ s/\s//g;
+                $v =~ s/\s//g;
+                if ( $n =~ /^$NACRC_HOST/ ) {
+                    $self->{$NACHOST} = $v;
+                }
+                elsif ( $n =~ /^$NACRC_PORT/ ) {
+                    $self->{$NACPORT} = $v;
+                }
+                elsif ( $n =~ /^$NACRC_USER/ ) {
+                    $self->{$NACUSER} = $v;
+                }
+                elsif ( $n =~ /^$NACRC_PASS/ ) {
+                    $self->{$NACPASS} = $v;
+                }
+                elsif ( $n =~ /^$NACRC_CONFIGDB/ ) {
+                    $self->{$NACCONFIGDB} = $v;
+                }
+                else {
+                    warn "Unknown RC line: '$line'\n";
+                }
+            }
+            else {
+                warn "Bad RC line FORMAT: '$line'\n";
+            }
+        }
+        close NACCONFIG;
+
+    }
+    else {
+        warn "No config file: $config_file\n";
+    }
+
+    $self->{$NACCONFIGDB} = $DEFAULT_NACCONFIGDB if !defined $self->{$NACCONFIGDB};
+    $self->{$NACHOST}     = $DEFAULT_NACHOST     if !defined $self->{$NACHOST};
+    $self->{$NACPORT}     = $DEFAULT_NACPORT     if !defined $self->{$NACPORT};
+    $self->{$NACUSER}     = $DEFAULT_NACUSER     if !defined $self->{$NACUSER};
+    $self->{$NACPASS}     = $DEFAULT_NACPASS     if !defined $self->{$NACPASS};
 
     eval {
-        if ( _connect() ) {
+        if ( $self->_connect() )
+        {
             $self->_read_db;
-            _disconnect();
+            $self->_disconnect();
             $ret++;
         }
     };
@@ -138,7 +199,6 @@ sub new {
     }
 
     if ($ret) {
-        bless $self, $class;
         return $self;
     }
 
@@ -178,8 +238,10 @@ sub AUTOLOAD {
 sub _read_db {
     my ($self) = (@_);
     my $ret;
-    my $global_sql = "SELECT configid,hostname,name,value FROM config WHERE hostname IS NULL ";
-    my $local_sql  = "SELECT configid,hostname,name,value FROM config WHERE hostname = '$HOSTNAME'";
+    my $global_sql =
+      "SELECT configid,hostname,name,value FROM config WHERE hostname IS NULL ";
+    my $local_sql =
+      "SELECT configid,hostname,name,value FROM config WHERE hostname = '$HOSTNAME'";
 
     EventLog( EVENT_DEBUG, MYNAMELINE . " called" );
 
@@ -212,7 +274,8 @@ sub _read_db {
         my $name     = $answer[ $col++ ];
         my $value    = $answer[ $col++ ];
 
-        EventLog( EVENT_DEBUG, 'Local[' . "$hostname" . ']' . " $name: $value " );
+        EventLog( EVENT_DEBUG,
+            'Local[' . "$hostname" . ']' . " $name: $value " );
 
         $self->{$name} = $value;
     }
@@ -220,39 +283,43 @@ sub _read_db {
 }
 
 sub _disconnect {
+    my ($self) = (@_);
 }
 
 sub _connect {
+    my ($self) = (@_);
     my $ret = 0;
 
-    my $mysql_db   = $CONFIG_NACCONFIGDB;
-    my $mysql_host = $CONFIG_HOST;
-    my $mysql_port = $CONFIG_PORT;
-    my $mysql_user = $CONFIG_USERID;
-    my $mysql_pass = $CONFIG_PASSWORD;
+    my $mysql_db   = $self->{$NACCONFIGDB};
+    my $mysql_host = $self->{$NACHOST};
+    my $mysql_port = $self->{$NACPORT};
+    my $mysql_user = $self->{$NACUSER};
+    my $mysql_pass = $self->{$NACPASS};
 
     # EventLog( EVENT_DEBUG, ( MYNAMELINE . "() called\n" ) );
 
-    my $db_source = "dbi:mysql:"
+    my $db_source =
+      "dbi:mysql:"
       . "dbname=$mysql_db;"
       . "host=$mysql_host;"
-      . "port=$mysql_port;"
-      ;
+      . "port=$mysql_port;";
 
     eval {
-        if ( !( $DBH = DBI->connect(
-                    $db_source,
-                    $mysql_user,
-                    $mysql_pass,
-                    { PrintError => 1, RaiseError => 1, AutoCommit => 1 } ) ) )
+        if (
+            !(
+                $DBH = DBI->connect(
+                    $db_source, $mysql_user, $mysql_pass,
+                    { PrintError => 1, RaiseError => 1, AutoCommit => 1 }
+                )
+            )
+          )
         {
             carp "Cannot open DB for config, $DBI::errstr\n"
               . "db:$mysql_db\n"
               . "host:$mysql_host\n"
               . "port:$mysql_port\n"
               . "user:$mysql_user\n"
-              . "pass:$mysql_pass\n"
-              ;
+              . "pass:$mysql_pass\n";
         }
         else {
 

@@ -15,7 +15,8 @@
 #
 
 use FindBin;
-use lib "$FindBin::Bin/../lib/perl5";
+use lib "$FindBin::Bin/../lib";
+use NAC::Syslog;
 use NAC::Constants;
 use NAC::DBConsts;
 use NAC::DBReadOnly;

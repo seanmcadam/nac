@@ -417,11 +417,11 @@ sub sql_connected {
         return 0;
     }
     elsif ( !defined $self->{$SQL_DBH} ) {
-        EventLog( EVENT_WARN, MYNAMELINE() . " Missing DBH" );
+        EventLog( EVENT_DEBUG, MYNAMELINE() . " Missing DBH" );
         return 0;
     }
     elsif ( !$self->{$SQL_DBH}->ping ) {
-        EventLog( EVENT_WARN, MYNAMELINE() . " DB Not Pingable " );
+        EventLog( EVENT_DEBUG, MYNAMELINE() . " DB Not Pingable " );
         return 0;
     }
     else {

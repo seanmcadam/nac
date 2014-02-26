@@ -27,8 +27,9 @@ if( ! ($bufsync->BUF) ) {
 	exit;
 	}
 
+$bufsync->server_setup();
 become_daemon();
-
 $bufsync->server_buf_loop();
+
 EventLog( EVENT_INFO, "$0 Exiting" );
 

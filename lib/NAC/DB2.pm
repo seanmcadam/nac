@@ -149,7 +149,7 @@ sub new() {
     my $config = NAC::ConfigDB->new();
 
     # For backward compatibility
-    $parms{$SQL_DB}        = ( defined $parm_ref->{$SQL_DB} )        ? $parm_ref->{$SQL_DB}        : $config->nac_master_write_db;
+    $parms{$SQL_DB}        = ( defined $parm_ref->{$SQL_DB} )        ? $parm_ref->{$SQL_DB}        : $config->nac_master_write_db_audit;
     $parms{$SQL_HOST}      = ( defined $parm_ref->{$SQL_HOST} )      ? $parm_ref->{$SQL_HOST}      : $config->nac_master_write_hostname;
     $parms{$SQL_PORT}      = ( defined $parm_ref->{$SQL_PORT} )      ? $parm_ref->{$SQL_PORT}      : $config->nac_master_write_port;
     $parms{$SQL_USER}      = ( defined $parm_ref->{$SQL_USER} )      ? $parm_ref->{$SQL_USER}      : $config->nac_master_write_user;

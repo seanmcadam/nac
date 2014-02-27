@@ -39,6 +39,7 @@ WriteMakefile(
         'bin/sync-switchportstate-all.pl'     => '$(INST_BIN)/sync-switchportstate-all.pl',
         'bin/update-host-lastseen.pl'         => '$(INST_BIN)/update-host-lastseen.pl',
         'bin/update-slave-status.pl'          => '$(INST_BIN)/update-slave-status.pl',
+        'bin/verify-dbs.pl'                   => '$(INST_BIN)/verify-dbs.pl',
         'local/list-templates.pl'             => '$(PERLPREFIX)/local/list-templates.pl',
         'local/list-vlangroups.pl'            => '$(PERLPREFIX)/local/list-vlangroups.pl',
         'local/list-vlans.pl'                 => '$(PERLPREFIX)/local/list-vlans.pl',

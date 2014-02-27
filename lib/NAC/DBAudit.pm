@@ -53,7 +53,7 @@ sub new() {
     my %parms = ();
     my $config = NAC::ConfigDB->new() || return 0;
 
-    $parms{$SQL_DB}    = $config->nac_master_write_db;
+    $parms{$SQL_DB}    = $config->nac_master_write_db_audit;
     $parms{$SQL_HOST}  = $config->nac_master_write_hostname;
     $parms{$SQL_PORT}  = $config->nac_master_write_port;
     $parms{$SQL_USER}  = $config->nac_master_write_user;

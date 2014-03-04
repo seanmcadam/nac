@@ -30,7 +30,7 @@ Readonly our $USE_SNMP => 0;
 
 BEGIN {
     use FindBin;
-    use lib "$FindBin::Bin/../lib";
+    use lib "$FindBin::Bin/..";
     if ($USE_SNMP) {
         use NAC::SNMP;
     }

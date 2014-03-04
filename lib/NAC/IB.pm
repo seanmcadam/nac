@@ -18,7 +18,7 @@
 #---------------------------------------------------------------------------
 package NAC::IB;
 use FindBin;
-use lib "$FindBin::Bin/../lib";
+use lib "$FindBin::Bin/..";
 
 use base qw( Exporter );
 

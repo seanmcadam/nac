@@ -1,27 +1,8 @@
 #!/bin/sh
 #
-# radiator      This shell script takes care of starting and stopping
-#               Radiator (radius daemon).
-#
-# chkconfig: 2345 90 15
-# description: radiator is the radius daemon required for RAS AAA.
-# processname: /usr/bin/radiusd
-#
-# Startup script for Radiator on Linux. Install this as 
-# /etc/init.d/radiator. If you have chkconfig, you can use
-# chkconfig -add radiator
-# to generate the required start asnd stop entries in /etc/rc[2345].d/
-# Otherwise, you need to add symlinks to /etc/rc[2345].d/
-#
-# config: /etc/radiator/radius.cfg
-# Author: Mike McCauley (mikem@open.com.au)
-# Copyright (C) 2000-2005 Open System Consultants
-# $Id: linux-radiator.init,v 1.12 2009/03/10 21:58:58 mikem Exp $
-
-# [ -f /etc/sysconfig/radiator ] && . /etc/sysconfig/radiator
 
 [ -z "${RADIUSD}" ] && RADIUSD=/usr/bin/radiusd
-[ -z "${RADIATOR_CONFIG}" ] && RADIATOR_CONFIG=$HOME/nac/etc/radius.cfg
+[ -z "${RADIATOR_CONFIG}" ] && RADIATOR_CONFIG=$HOME/nac/etc/radiator.cfg
 [ -z "${RADIATOR_ARGS}" ] && RADIATOR_ARGS=""
 [ -z "${RADIUSD_ARGS}" ] && RADIUSD_ARGS="-config_file $RADIATOR_CONFIG -daemon $RADIATOR_ARGS"
 

@@ -219,20 +219,7 @@ sub new {
                     warn "Bad RC line FORMAT: '$line'\n";
                 }
             }
-<<<<<<< HEAD
-	    elsif( $line =~ /^\s*#/ ) {
-		next;
-		}
-	    elsif( $line eq '' ) {
-		next;
-		}
-            else {
-                warn "Bad RC line FORMAT: '$line', SKIPPING\n";
-            }
-=======
             close NACCONFIG;
-
->>>>>>> a09cac800b4a8db850e3a73086aeeff5c048c1be
         }
         else {
             warn "No config file: $config_file\n";

@@ -15,7 +15,7 @@
 package NAC::ConfigDB;
 
 use FindBin;
-use lib "$FindBin::Bin/../lib";
+use lib "$FindBin::Bin/..";
 use base qw( Exporter );
 use Readonly;
 use Data::Dumper;
@@ -34,64 +34,109 @@ NAC::Syslog::DeactivateDebug();
 NAC::Syslog::ActivateSyslog();
 NAC::Syslog::ActivateStdout();
 
+#
+# Used in .nacconfig file
+#
+Readonly our $NACRC_HOST     => 'HOST';
+Readonly our $NACRC_PORT     => 'PORT';
+Readonly our $NACRC_PASS     => 'PASS';
+Readonly our $NACRC_USER     => 'USER';
+Readonly our $NACRC_CONFIGDB => 'DB';
+
+#
+# Defaults
+#
 Readonly our $DEFAULT_NACCONFIGDB => 'nacconfig';
 Readonly our $DEFAULT_NACHOST     => 'localhost';
 Readonly our $DEFAULT_NACPORT     => 3306;
 Readonly our $DEFAULT_NACUSER     => 'nacconfig';
 Readonly our $DEFAULT_NACPASS     => 'nacconfig';
 Readonly our $NACRC_FILENAME      => '.nacconfig';
-Readonly our $NACRC_HOST          => 'HOST';
-Readonly our $NACRC_PORT          => 'PORT';
-Readonly our $NACRC_PASS          => 'PASS';
-Readonly our $NACRC_USER          => 'USER';
-Readonly our $NACRC_CONFIGDB      => 'DB';
-Readonly our $NACCONFIGDB         => 'NAC-CONFIG-DB';
-Readonly our $NACHOST             => 'NAC-CONFIG-HOST';
-Readonly our $NACPORT             => 'NAC-CONFIG-PORT';
-Readonly our $NACUSER             => 'NAC-CONFIG-USER';
-Readonly our $NACPASS             => 'NAC-CONFIG-PASS';
 
-Readonly our $NAC_MASTER_WRITE_HOSTNAME      => 'NAC_MASTER_WRITE_HOSTNAME';
-Readonly our $NAC_MASTER_WRITE_PORT          => 'NAC_MASTER_WRITE_PORT';
-Readonly our $NAC_MASTER_WRITE_DB            => 'NAC_MASTER_WRITE_DB';
-Readonly our $NAC_MASTER_WRITE_USER          => 'NAC_MASTER_WRITE_USER';
-Readonly our $NAC_MASTER_WRITE_PASS          => 'NAC_MASTER_WRITE_PASS';
-Readonly our $NAC_EVENTLOG_WRITE_HOSTNAME    => 'NAC_EVENTLOG_WRITE_HOSTNAME';
-Readonly our $NAC_EVENTLOG_WRITE_PORT        => 'NAC_EVENTLOG_WRITE_PORT';
-Readonly our $NAC_EVENTLOG_WRITE_DB          => 'NAC_EVENTLOG_WRITE_DB';
-Readonly our $NAC_EVENTLOG_WRITE_USER        => 'NAC_EVENTLOG_WRITE_USER';
-Readonly our $NAC_EVENTLOG_WRITE_PASS        => 'NAC_EVENTLOG_WRITE_PASS';
-Readonly our $NAC_RADIUSAUDIT_WRITE_HOSTNAME => 'NAC_RADIUSAUDIT_WRITE_HOSTNAME';
-Readonly our $NAC_RADIUSAUDIT_WRITE_PORT     => 'NAC_RADIUSAUDIT_WRITE_PORT';
-Readonly our $NAC_RADIUSAUDIT_WRITE_DB       => 'NAC_RADIUSAUDIT_WRITE_DB';
-Readonly our $NAC_RADIUSAUDIT_WRITE_USER     => 'NAC_RADIUSAUDIT_WRITE_USER';
-Readonly our $NAC_RADIUSAUDIT_WRITE_PASS     => 'NAC_RADIUSAUDIT_WRITE_PASS';
-Readonly our $NAC_LOCAL_READONLY_HOSTNAME    => 'NAC_LOCAL_READONLY_HOSTNAME';
-Readonly our $NAC_LOCAL_READONLY_PORT        => 'NAC_LOCAL_READONLY_PORT';
-Readonly our $NAC_LOCAL_READONLY_DB          => 'NAC_LOCAL_READONLY_DB';
-Readonly our $NAC_LOCAL_READONLY_USER        => 'NAC_LOCAL_READONLY_USER';
-Readonly our $NAC_LOCAL_READONLY_PASS        => 'NAC_LOCAL_READONLY_PASS';
-Readonly our $NAC_LOCAL_BUFFER_HOSTNAME      => 'NAC_LOCAL_BUFFER_HOSTNAME';
-Readonly our $NAC_LOCAL_BUFFER_PORT          => 'NAC_LOCAL_BUFFER_PORT';
-Readonly our $NAC_LOCAL_BUFFER_DB            => 'NAC_LOCAL_BUFFER_DB';
-Readonly our $NAC_LOCAL_BUFFER_USER          => 'NAC_LOCAL_BUFFER_USER';
-Readonly our $NAC_LOCAL_BUFFER_PASS          => 'NAC_LOCAL_BUFFER_PASS';
-Readonly our $NAC_SLAVE_HOSTNAME             => 'NAC_SLAVE_HOSTNAME';
-Readonly our $NAC_IB_HOSTNAME                => 'NAC_IB_HOSTNAME';
-Readonly our $NAC_IB_USER                    => 'NAC_IB_USER';
-Readonly our $NAC_IB_PASS                    => 'NAC_IB_PASS';
-Readonly our $NAC_SWITCH_SNMP_STRING         => 'NAC_SWITCH_SNMP_STRING';
-Readonly our $NAC_SNMP_HOSTNAME              => 'SNMP_HOSTNAME';
-Readonly our $NAC_SNMP_COMMUNITY             => 'SNMP_COMMUNITY';
-Readonly our $NAC_SNMP_PORT                  => 'SNMP_PORT';
-Readonly our $NAC_SNMP_SESSION               => 'SNMP_SESSION';
+#
+# Used Internally
+#
+Readonly our $NACCONFIGDB => 'NAC-CONFIG-DB';
+Readonly our $NACHOST     => 'NAC-CONFIG-HOST';
+Readonly our $NACPORT     => 'NAC-CONFIG-PORT';
+Readonly our $NACUSER     => 'NAC-CONFIG-USER';
+Readonly our $NACPASS     => 'NAC-CONFIG-PASS';
+
+#
+# Exported to other modules
+#
+Readonly our $NAC_MASTER_WRITE_HOSTNAME       => 'NAC_MASTER_WRITE_HOSTNAME';
+Readonly our $NAC_MASTER_WRITE_PORT           => 'NAC_MASTER_WRITE_PORT';
+Readonly our $NAC_MASTER_WRITE_USER           => 'NAC_MASTER_WRITE_USER';
+Readonly our $NAC_MASTER_WRITE_PASS           => 'NAC_MASTER_WRITE_PASS';
+Readonly our $NAC_MASTER_WRITE_DB             => 'NAC_MASTER_WRITE_DB';
+Readonly our $NAC_MASTER_WRITE_DB_AUDIT       => 'NAC_MASTER_WRITE_DB_AUDIT';
+Readonly our $NAC_MASTER_WRITE_DB_EVENTLOG    => 'NAC_MASTER_WRITE_DB_EVENTLOG';
+Readonly our $NAC_MASTER_WRITE_DB_RADIUSAUDIT => 'NAC_MASTER_WRITE_DB_RADIUSAUDIT';
+Readonly our $NAC_MASTER_WRITE_DB_STATUS      => 'NAC_MASTER_WRITE_DB_STATUS';
+Readonly our $NAC_MASTER_WRITE_DB_USER        => 'NAC_MASTER_WRITE_DB_USER';
+Readonly our $NAC_SLAVE_HOSTNAME              => 'NAC_SLAVE_HOSTNAME';
+Readonly our $NAC_SLAVE_PORT                  => 'NAC_SLAVE_PORT';
+Readonly our $NAC_SLAVE_USER                  => 'NAC_SLAVE_USER';
+Readonly our $NAC_SLAVE_PASS                  => 'NAC_SLAVE_PASS';
+Readonly our $NAC_SLAVE_DB_AUDIT              => 'NAC_SLAVE_DB_AUDIT';
+Readonly our $NAC_SLAVE_DB_CONFIG             => 'NAC_SLAVE_DB_CONFIG';
+Readonly our $NAC_SLAVE_DB_EVENTLOG           => 'NAC_SLAVE_DB_EVENTLOG';
+Readonly our $NAC_SLAVE_DB_RADIUSAUDIT        => 'NAC_SLAVE_DB_RADIUSAUDIT';
+Readonly our $NAC_SLAVE_DB_STATUS             => 'NAC_SLAVE_DB_STATUS';
+Readonly our $NAC_SLAVE_DB_USER               => 'NAC_SLAVE_DB_USER';
+Readonly our $NAC_EVENTLOG_WRITE_HOSTNAME     => 'NAC_EVENTLOG_WRITE_HOSTNAME';
+Readonly our $NAC_EVENTLOG_WRITE_PORT         => 'NAC_EVENTLOG_WRITE_PORT';
+Readonly our $NAC_EVENTLOG_WRITE_DB           => 'NAC_EVENTLOG_WRITE_DB';
+Readonly our $NAC_EVENTLOG_WRITE_USER         => 'NAC_EVENTLOG_WRITE_USER';
+Readonly our $NAC_EVENTLOG_WRITE_PASS         => 'NAC_EVENTLOG_WRITE_PASS';
+Readonly our $NAC_RADIUSAUDIT_WRITE_HOSTNAME  => 'NAC_RADIUSAUDIT_WRITE_HOSTNAME';
+Readonly our $NAC_RADIUSAUDIT_WRITE_PORT      => 'NAC_RADIUSAUDIT_WRITE_PORT';
+Readonly our $NAC_RADIUSAUDIT_WRITE_DB        => 'NAC_RADIUSAUDIT_WRITE_DB';
+Readonly our $NAC_RADIUSAUDIT_WRITE_USER      => 'NAC_RADIUSAUDIT_WRITE_USER';
+Readonly our $NAC_RADIUSAUDIT_WRITE_PASS      => 'NAC_RADIUSAUDIT_WRITE_PASS';
+Readonly our $NAC_LOCAL_READONLY_HOSTNAME     => 'NAC_LOCAL_READONLY_HOSTNAME';
+Readonly our $NAC_LOCAL_READONLY_PORT         => 'NAC_LOCAL_READONLY_PORT';
+Readonly our $NAC_LOCAL_READONLY_USER         => 'NAC_LOCAL_READONLY_USER';
+Readonly our $NAC_LOCAL_READONLY_PASS         => 'NAC_LOCAL_READONLY_PASS';
+Readonly our $NAC_LOCAL_READONLY_DB           => 'NAC_LOCAL_READONLY_DB';
+Readonly our $NAC_LOCAL_READONLY_DB_AUDIT     => 'NAC_LOCAL_READONLY_DB_AUDIT';
+Readonly our $NAC_LOCAL_READONLY_DB_CONFIG    => 'NAC_LOCAL_READONLY_DB_CONFIG';
+Readonly our $NAC_LOCAL_BUFFER_HOSTNAME       => 'NAC_LOCAL_BUFFER_HOSTNAME';
+Readonly our $NAC_LOCAL_BUFFER_PORT           => 'NAC_LOCAL_BUFFER_PORT';
+Readonly our $NAC_LOCAL_BUFFER_DB             => 'NAC_LOCAL_BUFFER_DB';
+Readonly our $NAC_LOCAL_BUFFER_USER           => 'NAC_LOCAL_BUFFER_USER';
+Readonly our $NAC_LOCAL_BUFFER_PASS           => 'NAC_LOCAL_BUFFER_PASS';
+Readonly our $NAC_IB_HOSTNAME                 => 'NAC_IB_HOSTNAME';
+Readonly our $NAC_IB_USER                     => 'NAC_IB_USER';
+Readonly our $NAC_IB_PASS                     => 'NAC_IB_PASS';
+Readonly our $NAC_SWITCH_SNMP_STRING          => 'NAC_SWITCH_SNMP_STRING';
+Readonly our $NAC_SNMP_HOSTNAME               => 'NAC_SNMP_HOSTNAME';
+Readonly our $NAC_SNMP_COMMUNITY              => 'NAC_SNMP_COMMUNITY';
+Readonly our $NAC_SNMP_PORT                   => 'NAC_SNMP_PORT';
+Readonly our $NAC_SNMP_SESSION                => 'NAC_SNMP_SESSION';
 
 our @EXPORT = qw (
   $NAC_MASTER_WRITE_HOSTNAME
   $NAC_MASTER_WRITE_PORT
-  $NAC_MASTER_WRITE_DB
   $NAC_MASTER_WRITE_USER
   $NAC_MASTER_WRITE_PASS
+  $NAC_MASTER_WRITE_DB
+  $NAC_MASTER_WRITE_DB_AUDIT
+  $NAC_MASTER_WRITE_DB_EVENTLOG
+  $NAC_MASTER_WRITE_DB_RADIUSAUDIT
+  $NAC_MASTER_WRITE_DB_STATUS
+  $NAC_MASTER_WRITE_DB_USER
+  $NAC_SLAVE_HOSTNAME
+  $NAC_SLAVE_PORT
+  $NAC_SLAVE_USER
+  $NAC_SLAVE_PASS
+  $NAC_SLAVE_DB_AUDIT
+  $NAC_SLAVE_DB_CONFIG
+  $NAC_SLAVE_DB_EVENTLOG
+  $NAC_SLAVE_DB_RADIUSAUDIT
+  $NAC_SLAVE_DB_STATUS
+  $NAC_SLAVE_DB_USER
   $NAC_EVENTLOG_WRITE_HOSTNAME
   $NAC_EVENTLOG_WRITE_PORT
   $NAC_EVENTLOG_WRITE_DB
@@ -104,15 +149,16 @@ our @EXPORT = qw (
   $NAC_RADIUSAUDIT_WRITE_PASS
   $NAC_LOCAL_READONLY_HOSTNAME
   $NAC_LOCAL_READONLY_PORT
-  $NAC_LOCAL_READONLY_DB
   $NAC_LOCAL_READONLY_USER
   $NAC_LOCAL_READONLY_PASS
+  $NAC_LOCAL_READONLY_DB
+  $NAC_LOCAL_READONLY_DB_AUDIT
+  $NAC_LOCAL_READONLY_DB_CONFIG
   $NAC_LOCAL_BUFFER_HOSTNAME
   $NAC_LOCAL_BUFFER_PORT
   $NAC_LOCAL_BUFFER_DB
   $NAC_LOCAL_BUFFER_USER
   $NAC_LOCAL_BUFFER_PASS
-  $NAC_SLAVE_HOSTNAME
   $NAC_IB_HOSTNAME
   $NAC_IB_USER
   $NAC_IB_PASS
@@ -123,6 +169,7 @@ our @EXPORT = qw (
   $NAC_SNMP_SESSION
 );
 
+our %db_values = ();
 my $HOSTNAME = hostname;
 my $DBH;
 
@@ -136,36 +183,43 @@ sub new {
     my $self = {};
     bless $self, $class;
 
-    # Open .nacconfig
+    if ( !( keys(%db_values) ) ) {
 
-    my $config_file = $HOME . '/' . $NACRC_FILENAME;
-    if ( open( NACCONFIG, $config_file ) ) {
-        while (<NACCONFIG>) {
-            chop;
-            my $line = $_;
-            my ( $n, $v );
-            if ( ( $n, $v ) = split( '=', $line ) ) {
-                $n =~ s/\s//g;
-                $v =~ s/\s//g;
-                if ( $n =~ /^$NACRC_HOST/ ) {
-                    $self->{$NACHOST} = $v;
-                }
-                elsif ( $n =~ /^$NACRC_PORT/ ) {
-                    $self->{$NACPORT} = $v;
-                }
-                elsif ( $n =~ /^$NACRC_USER/ ) {
-                    $self->{$NACUSER} = $v;
-                }
-                elsif ( $n =~ /^$NACRC_PASS/ ) {
-                    $self->{$NACPASS} = $v;
-                }
-                elsif ( $n =~ /^$NACRC_CONFIGDB/ ) {
-                    $self->{$NACCONFIGDB} = $v;
+        # Open .nacconfig
+
+        my $config_file = $HOME . '/' . $NACRC_FILENAME;
+        if ( open( NACCONFIG, $config_file ) ) {
+            while (<NACCONFIG>) {
+                chop;
+                my $line = $_;
+                my ( $n, $v );
+                if ( ( $n, $v ) = split( '=', $line ) ) {
+                    $n =~ s/\s//g;
+                    $v =~ s/\s//g;
+                    if ( $n =~ /^$NACRC_HOST/ ) {
+                        $self->{$NACHOST} = $v;
+                    }
+                    elsif ( $n =~ /^$NACRC_PORT/ ) {
+                        $self->{$NACPORT} = $v;
+                    }
+                    elsif ( $n =~ /^$NACRC_USER/ ) {
+                        $self->{$NACUSER} = $v;
+                    }
+                    elsif ( $n =~ /^$NACRC_PASS/ ) {
+                        $self->{$NACPASS} = $v;
+                    }
+                    elsif ( $n =~ /^$NACRC_CONFIGDB/ ) {
+                        $self->{$NACCONFIGDB} = $v;
+                    }
+                    else {
+                        warn "Unknown RC line: '$line'\n";
+                    }
                 }
                 else {
-                    warn "Unknown RC line: '$line'\n";
+                    warn "Bad RC line FORMAT: '$line'\n";
                 }
             }
+<<<<<<< HEAD
 	    elsif( $line =~ /^\s*#/ ) {
 		next;
 		}
@@ -175,33 +229,43 @@ sub new {
             else {
                 warn "Bad RC line FORMAT: '$line', SKIPPING\n";
             }
-        }
-        close NACCONFIG;
+=======
+            close NACCONFIG;
 
+>>>>>>> a09cac800b4a8db850e3a73086aeeff5c048c1be
+        }
+        else {
+            warn "No config file: $config_file\n";
+        }
+
+        $self->{$NACCONFIGDB} = $DEFAULT_NACCONFIGDB if !defined $self->{$NACCONFIGDB};
+        $self->{$NACHOST}     = $DEFAULT_NACHOST     if !defined $self->{$NACHOST};
+        $self->{$NACPORT}     = $DEFAULT_NACPORT     if !defined $self->{$NACPORT};
+        $self->{$NACUSER}     = $DEFAULT_NACUSER     if !defined $self->{$NACUSER};
+        $self->{$NACPASS}     = $DEFAULT_NACPASS     if !defined $self->{$NACPASS};
+
+        eval {
+            if ( $self->_connect() )
+            {
+                $self->_read_db;
+                $self->_disconnect();
+                $ret++;
+            }
+        };
+        if ($@) {
+
+            # LOGEVALFAIL();
+            warn MYNAME . " Cannot Connect to Config DB\n";
+            return 0;
+        }
     }
     else {
-        warn "No config file: $config_file\n";
-    }
 
-    $self->{$NACCONFIGDB} = $DEFAULT_NACCONFIGDB if !defined $self->{$NACCONFIGDB};
-    $self->{$NACHOST}     = $DEFAULT_NACHOST     if !defined $self->{$NACHOST};
-    $self->{$NACPORT}     = $DEFAULT_NACPORT     if !defined $self->{$NACPORT};
-    $self->{$NACUSER}     = $DEFAULT_NACUSER     if !defined $self->{$NACUSER};
-    $self->{$NACPASS}     = $DEFAULT_NACPASS     if !defined $self->{$NACPASS};
-
-    eval {
-        if ( $self->_connect() )
-        {
-            $self->_read_db;
-            $self->_disconnect();
-            $ret++;
+        # warn "ALREAD CALLED DB, REUSING VALUES\n";
+        foreach my $k ( keys(%db_values) ) {
+            $self->{$k} = $db_values{$k};
         }
-    };
-    if ($@) {
-
-        # LOGEVALFAIL();
-        warn MYNAME . " Cannot Connect to Config DB\n";
-        return 0;
+        $ret++;
     }
 
     if ($ret) {
@@ -229,7 +293,7 @@ sub AUTOLOAD {
 
     if ( !( $function =~ /^NAC_/ ) ) {
         print "SKIPPING: $function\n";
-        return;
+        return undef;
     }
 
     if ( !defined $self->{$function} ) {
@@ -244,12 +308,16 @@ sub AUTOLOAD {
 sub _read_db {
     my ($self) = (@_);
     my $ret;
-    my $global_sql =
-      "SELECT configid,hostname,name,value FROM config WHERE hostname IS NULL ";
-    my $local_sql =
-      "SELECT configid,hostname,name,value FROM config WHERE hostname = '$HOSTNAME'";
+    my $global_sql = "SELECT configid,hostname,name,value FROM config WHERE hostname IS NULL ";
+    my $local_sql  = "SELECT configid,hostname,name,value FROM config WHERE hostname = '$HOSTNAME'";
 
     EventLog( EVENT_DEBUG, MYNAMELINE . " called" );
+
+    if ( ( keys(%db_values) ) ) {
+        EventLog( EVENT_WARN, MYNAMELINE . ' %db_values already setup... reinitalizing' );
+    }
+
+    %db_values = ();
 
     my $sth = $DBH->prepare($global_sql);
     if ( !( $ret = $sth->execute() ) ) {
@@ -266,6 +334,7 @@ sub _read_db {
         EventLog( EVENT_DEBUG, 'Global[' . ']' . " $name: $value " );
 
         $self->{$name} = $value;
+        $db_values{$name} = $value;
     }
 
     $sth = $DBH->prepare($local_sql);

@@ -16,11 +16,14 @@ use FindBin;
 use lib "$FindBin::Bin/../lib";
 use strict;
 use Getopt::Long;
-use NAC::ConfigDB;
+use NAC::DBBuffer;
 
 #
 # Need to rewrite this to get from NAC::DBBuffer
 #
+
+my $buf = NAC::DBBuffer->new();
+
 
 my $db_host = "";
 my $db_port = "";

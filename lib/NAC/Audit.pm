@@ -21,7 +21,7 @@
 package NAC::Audit;
 
 use FindBin;
-use lib "$FindBin::Bin/../lib";
+use lib "$FindBin::Bin/..";
 use base qw( Exporter );
 use Data::Dumper;
 use Carp qw(confess cluck);

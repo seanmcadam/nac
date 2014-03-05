@@ -29,7 +29,7 @@
 
 package NAC::Radius::AuthNAC2;
 use FindBin;
-use lib "$FindBin::Bin/../..";
+use lib "$FindBin::Bin/..";
 
 @ISA = qw(Radius::AuthGeneric);
 use Radius::AuthGeneric;

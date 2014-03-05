@@ -26,7 +26,7 @@ WriteMakefile(
         'lib/NAC/DBStatus.pm'                 => '$(INST_LIB)/NAC/DBStatus.pm',
         'lib/NAC/IB.pm'                       => '$(INST_LIB)/NAC/IB.pm',
         'lib/NAC/Misc.pm'                     => '$(INST_LIB)/NAC/Misc.pm',
-        'lib/NAC/Radius/AuthNAC2.pm'          => '$(INST_LIB)/NAC/Radius/AuthNAC2.pm',
+        'lib/Radius/AuthNAC2.pm'              => '$(INST_LIB)/Radius/AuthNAC2.pm',
         'lib/NAC/SNMP.pm'                     => '$(INST_LIB)/NAC/SNMP.pm',
         'lib/NAC/Syslog.pm'                   => '$(INST_LIB)/NAC/Syslog.pm',
         'bin/auditrollup.pl'                  => '$(INST_BIN)/auditrollup.pl',

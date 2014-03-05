@@ -10,10 +10,10 @@ use NAC::Constants;
 use NAC::DBBufSync;
 use strict;
 
-# NAC::Syslog::DeactivateDebug();
-NAC::Syslog::ActivateDebug();
+NAC::Syslog::DeactivateDebug();
+# NAC::Syslog::ActivateDebug();
 NAC::Syslog::DeactivateStdout();
-NAC::Syslog::ActivateStdout();
+# NAC::Syslog::ActivateStdout();
 
 my $bufsync;
 

@@ -240,10 +240,9 @@ sub RA {
 #-------------------------------------------------------
 sub SNMP {
     if ( !$USE_SNMP ) { return undef; }
+    my ( $self, $hostname ) = @_;
 
     EventLog( EVENT_DEBUG, MYNAMELINE . " Called" );
-
-    my ( $self, $hostname ) = @_;
 
     if ( !defined $hostname ) { confess; }
     if ( !$self->{$SNMPOK} )  { confess; }
@@ -1466,7 +1465,7 @@ sub add_lastseen_switchport_id {
                         EventLog( EVENT_WARN, MYNAMELINE . " CAN'T Update IfIndex $portname, for $switchip, $switchname" );
                     }
 
-                    my $enabled = $self->SNMP()->get_mac_auth_enabled_index($idx);
+                    my $enabled = $self->SNMP->get_mac_auth_enabled_index($idx);
 
                     if ( !( $self->STATUS->update_switchport_ifindex( $id, $idx ) ) ) {
                         EventLog( EVENT_WARN, MYNAMELINE . " CAN'T Update IfIndex $portname, for $switchip, $switchname" );
@@ -1478,9 +1477,9 @@ sub add_lastseen_switchport_id {
                         }
 
                         if ($enabled) {
-                            my $method    = $self->SNMP()->get_mac_auth_method_index($idx);
-                            my $state_ref = $self->SNMP()->get_mac_auth_state_index_ref($idx);
-                            my $auth_ref  = $self->SNMP()->get_mac_auth_auth_index_ref($idx);
+                            my $method    = $self->SNMP->get_mac_auth_method_index($idx);
+                            my $state_ref = $self->SNMP->get_mac_auth_state_index_ref($idx);
+                            my $auth_ref  = $self->SNMP->get_mac_auth_auth_index_ref($idx);
                             my $state     = undef;
                             my $auth      = undef;
 

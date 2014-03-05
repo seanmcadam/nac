@@ -29,7 +29,6 @@ use DBD::mysql;
 use POSIX;
 use Readonly;
 
-# use IO::Socket::INET;
 use NAC::Syslog;
 use NAC::Constants;
 use NAC::DBConsts;
@@ -567,8 +566,7 @@ sub connect {
 #
 #-------------------------------------------------------
 sub __delete_record($$) {
-    my $self     = shift;
-    my $parm_ref = shift;
+    my ($self,$parm_ref) = @_;
     my $ret      = 0;
 
     if ( !defined $parm_ref ) { confess; }
@@ -602,8 +600,7 @@ sub __delete_record($$) {
 # Translate DB_COL to use update_record()
 #-------------------------------------------------------
 sub __update_record_db_col($$) {
-    my $self     = shift;
-    my $parm_ref = shift;
+    my ($self,$parm_ref) = @_;
     my $ret      = 0;
 
     $self->reseterr;
@@ -636,8 +633,7 @@ sub __update_record_db_col($$) {
 #            {UPDATE_columnname} => value
 #-------------------------------------------------------
 sub __update_record($$) {
-    my $self     = shift;
-    my $parm_ref = shift;
+    my ($self,$parm_ref) = @_;
     my $ret      = 0;
 
     $self->reseterr;

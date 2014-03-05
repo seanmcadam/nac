@@ -1,6 +1,5 @@
 --------------------------------------------------------
-
-
+Perl Modules
 --------------------------------------------------------
 
 Infoblox - used to access infoblox perl API
@@ -16,10 +15,12 @@ Locations - Consists of a Site and A Building ID
 	A location is more or less a layer-3 boundry.
 	
 Switches (hosts) - input of switches (hostname, IPs, location-site,bldg)
-	Each switch it assinged a unique ID when added, from that point forward the IP address is the unique reference when updating it
+	Each switch it assinged a unique ID when added, from that point forward the IP address is the unique 
+	reference when updating it
 
 
-VLANs - a specific network boundy at one location, there can be several IP address ranges in the VLAN which would result in multiple entries
+VLANs - a specific network boundry at one location, there can be several IP address ranges in the VLAN which 
+	would result in multiple VLAN entries
 	Each vlan is associated with each switch at a location that supports the vlan
 
 

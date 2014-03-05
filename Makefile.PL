@@ -42,6 +42,8 @@ WriteMakefile(
         'local/list-templates.pl'             => '$(PERLPREFIX)/local/list-templates.pl',
         'local/list-vlangroups.pl'            => '$(PERLPREFIX)/local/list-vlangroups.pl',
         'local/list-vlans.pl'                 => '$(PERLPREFIX)/local/list-vlans.pl',
+        'etc/radiator.init'                   => '$(PERLPREFIX)/etc/radiator.init',
+        'etc/.nacconfig.example'              => '$(PERLPREFIX)/etc/.nacconfig.example',
         'sql/class-example.sql'               => '$(PERLPREFIX)/sql/class-example.sql',
         'sql/nacbuffer.sql'                   => '$(PERLPREFIX)/sql/nacbuffer.sql',
         'sql/naceventlog.sql'                 => '$(PERLPREFIX)/sql/naceventlog.sql',

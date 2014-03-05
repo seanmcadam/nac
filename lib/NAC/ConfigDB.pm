@@ -38,7 +38,7 @@ Readonly our $DEFAULT_NACCONFIGDB => 'nacconfig';
 Readonly our $DEFAULT_NACHOST     => 'localhost';
 Readonly our $DEFAULT_NACPORT     => 3306;
 Readonly our $DEFAULT_NACUSER     => 'nacconfig';
-Readonly our $DEFAULT_NACPASS     => '*** some default password ***';
+Readonly our $DEFAULT_NACPASS     => 'nacconfig';
 Readonly our $NACRC_FILENAME      => '.nacconfig';
 Readonly our $NACRC_HOST          => 'HOST';
 Readonly our $NACRC_PORT          => 'PORT';
@@ -166,8 +166,14 @@ sub new {
                     warn "Unknown RC line: '$line'\n";
                 }
             }
+	    elsif( $line =~ /^\s*#/ ) {
+		next;
+		}
+	    elsif( $line eq '' ) {
+		next;
+		}
             else {
-                warn "Bad RC line FORMAT: '$line'\n";
+                warn "Bad RC line FORMAT: '$line', SKIPPING\n";
             }
         }
         close NACCONFIG;

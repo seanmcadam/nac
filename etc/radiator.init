@@ -1,0 +1,113 @@
+#!/bin/sh
+#
+# radiator      This shell script takes care of starting and stopping
+#               Radiator (radius daemon).
+#
+# chkconfig: 2345 90 15
+# description: radiator is the radius daemon required for RAS AAA.
+# processname: /usr/bin/radiusd
+#
+# Startup script for Radiator on Linux. Install this as 
+# /etc/init.d/radiator. If you have chkconfig, you can use
+# chkconfig -add radiator
+# to generate the required start asnd stop entries in /etc/rc[2345].d/
+# Otherwise, you need to add symlinks to /etc/rc[2345].d/
+#
+# config: /etc/radiator/radius.cfg
+# Author: Mike McCauley (mikem@open.com.au)
+# Copyright (C) 2000-2005 Open System Consultants
+# $Id: linux-radiator.init,v 1.12 2009/03/10 21:58:58 mikem Exp $
+
+# [ -f /etc/sysconfig/radiator ] && . /etc/sysconfig/radiator
+
+[ -z "${RADIUSD}" ] && RADIUSD=/usr/bin/radiusd
+[ -z "${RADIATOR_CONFIG}" ] && RADIATOR_CONFIG=/opt/nac/radiator/radius.cfg
+[ -z "${RADIATOR_ARGS}" ] && RADIATOR_ARGS=""
+[ -z "${RADIUSD_ARGS}" ] && RADIUSD_ARGS="-config_file $RADIATOR_CONFIG -daemon $RADIATOR_ARGS"
+
+# Source 'em up
+if [ -f /etc/init.d/functions ]; then
+# LSB, RedHat, Mandrake etc:
+. /etc/init.d/functions
+STARTPROC="daemon $RADIUSD $RADIUSD_ARGS"
+CHECKPROC="status radiusd"
+KILLPROC="killproc radiusd"
+elif  [ -x /sbin/start-stop-daemon ]; then
+# Debian
+STARTPROC="/sbin/start-stop-daemon --start --pidfile /var/log/radius/radiusd.pid --exec $RADIUSD -- $RADIUSD_ARGS"
+CHECKPROC=
+KILLPROC="/sbin/start-stop-daemon --stop --pidfile /var/log/radius/radiusd.pid"
+elif [ -x /sbin/startproc ]; then
+# SuSE etc
+STARTPROC="/sbin/startproc $RADIUSD $RADIUSD_ARGS"
+CHECKPROC=
+KILLPROC="killproc radiusd"
+else
+# No daemon starter; Slackware?
+STARTPROC="$RADIUSD $RADIUSD_ARGS"
+CHECKPROC=
+KILLPROC="killproc radiusd"
+fi
+
+
+# Source additional OPTIONS if we have them.
+if [ -f /etc/sysconfig/radiator ] ; then
+	. /etc/sysconfig/radiator
+fi
+
+if [ ! -x $RADIUSD ]; then
+	echo Exiting...
+	exit 0
+fi
+
+start() {
+    # don't do squat if we don't have the config file
+    if [ -f $RADIATOR_CONFIG ]; then
+	echo cd /opt/nac/lib
+	cd /opt/nac/lib
+	echo -n "Starting Radiator: "
+	$STARTPROC
+	RETVAL=$?
+	echo
+    else
+	echo Unable to find config file $RADIATOR_CONFIG!
+    fi
+    return $RETVAL
+}
+
+stop() {
+    echo -n "Shutting down Radiator: "
+    $KILLPROC
+    RETVAL=$?
+    echo
+    return $RETVAL
+}
+
+getstatus() {
+        $CHECKPROC
+}
+case "$1" in
+  start)
+       start
+    ;;
+  stop)
+       stop
+    ;;
+  restart|reload)
+        stop
+        start
+	RETVAL=$?
+    ;;
+  status)
+	getstatus
+	RETVAL=$?
+    ;;
+
+  *)
+	echo "Usage: $0 {start|stop|restart|status}"
+	exit 1
+esac
+
+exit $RETVAL
+
+

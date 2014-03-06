@@ -193,9 +193,9 @@ sub new {
                 chop;
                 my $line = $_;
 
-		next if( $line =~ s/^#/ );
-		next if( $line =~ s/^\s+#/ );
 		next if( $line eq '' );
+		next if( $line =~ /^#/ );
+		next if( $line =~ /^\s+#/ );
 
                 my ( $n, $v );
                 if ( ( $n, $v ) = split( '=', $line ) ) {

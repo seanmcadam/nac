@@ -27,7 +27,7 @@
 #
 #
 
-package NAC::Radius::AuthNAC2;
+package Radius::AuthNAC2;
 use FindBin;
 use lib "$FindBin::Bin/..";
 

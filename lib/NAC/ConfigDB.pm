@@ -192,6 +192,11 @@ sub new {
             while (<NACCONFIG>) {
                 chop;
                 my $line = $_;
+
+		next if( $line =~ s/^#/ );
+		next if( $line =~ s/^\s+#/ );
+		next if( $line eq '' );
+
                 my ( $n, $v );
                 if ( ( $n, $v ) = split( '=', $line ) ) {
                     $n =~ s/\s//g;

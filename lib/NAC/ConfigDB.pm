@@ -172,7 +172,7 @@ our @EXPORT = qw (
 our %db_values = ();
 my $HOSTNAME = hostname;
 my $DBH;
-my $config_file = $HOME . '/etc/' . $NACRC_FILENAME;
+my $config_file = $HOME . '/nac/etc/' . $NACRC_FILENAME;
 
 sub new {
     my $class = shift;

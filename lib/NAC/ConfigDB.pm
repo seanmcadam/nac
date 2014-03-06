@@ -35,7 +35,7 @@ NAC::Syslog::ActivateSyslog();
 NAC::Syslog::ActivateStdout();
 
 #
-# Used in .nacconfig file
+# Used in nacconfig file
 #
 Readonly our $NACRC_HOST     => 'HOST';
 Readonly our $NACRC_PORT     => 'PORT';
@@ -51,7 +51,7 @@ Readonly our $DEFAULT_NACHOST     => 'localhost';
 Readonly our $DEFAULT_NACPORT     => 3306;
 Readonly our $DEFAULT_NACUSER     => 'nacconfig';
 Readonly our $DEFAULT_NACPASS     => 'nacconfig';
-Readonly our $NACRC_FILENAME      => '.nacconfig';
+Readonly our $NACRC_FILENAME      => 'nacconfig';
 
 #
 # Used Internally
@@ -172,6 +172,7 @@ our @EXPORT = qw (
 our %db_values = ();
 my $HOSTNAME = hostname;
 my $DBH;
+my $config_file = $HOME . '/etc/' . $NACRC_FILENAME;
 
 sub new {
     my $class = shift;
@@ -185,9 +186,8 @@ sub new {
 
     if ( !( keys(%db_values) ) ) {
 
-        # Open .nacconfig
+        # Open nacconfig
 
-        my $config_file = $HOME . '/' . $NACRC_FILENAME;
         if ( open( NACCONFIG, $config_file ) ) {
             while (<NACCONFIG>) {
                 chop;

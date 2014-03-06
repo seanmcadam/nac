@@ -43,7 +43,7 @@ WriteMakefile(
         'local/list-templates.pl'             => '$(PERLPREFIX)/local/list-templates.pl',
         'local/list-vlangroups.pl'            => '$(PERLPREFIX)/local/list-vlangroups.pl',
         'local/list-vlans.pl'                 => '$(PERLPREFIX)/local/list-vlans.pl',
-        'etc/.nacconfig.example'              => '$(PERLPREFIX)/etc/.nacconfig.example',
+        'etc/nacconfig.example'               => '$(PERLPREFIX)/etc/nacconfig.example',
         'etc/radiator.cfg.example'            => '$(PERLPREFIX)/etc/radiator.cfg.example',
         'etc/radiator.init.example'           => '$(PERLPREFIX)/etc/radiator.init.example',
         'etc/nacd.init.example'               => '$(PERLPREFIX)/etc/nacd.init.example',

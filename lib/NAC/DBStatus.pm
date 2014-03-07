@@ -60,7 +60,7 @@ sub new {
     my ($class) = @_;
     my $self;
 
-    EventLog( EVENT_START, MYNAME . "() started" );
+    EventLog( EVENT_DEBUG, MYNAME . "() started" );
 
     my %parms = ();
 

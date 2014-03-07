@@ -328,9 +328,7 @@ sub handle_request {
     my $ret   = ($main::ACCEPT);
     my $index = -1;
 
-    # EventLog( EVENT_INFO, MYNAMELINE . " called" );
-
-    # NAC::Syslog::ActivateDebug();
+    EventLog( EVENT_DEBUG, MYNAMELINE . " called" );
 
     eval {
 
@@ -386,6 +384,9 @@ sub handle_request {
                 $locid = $p->{$LOCID} = $parm{$DB_COL_SW_LOCID};
                 $p->{$SWITCHNAME} = $parm{$DB_COL_SW_NAME};
 
+
+        	$self->dbw->update_lastseen_switchid($switchid);
+
             }
             else {
                 EventLog( EVENT_DEBUG, "UNKNOWN Switch IP: $switchip MAC:$mac PORT:$portname" );
@@ -397,22 +398,12 @@ sub handle_request {
             EventLog( EVENT_WARN, "NO Switch IP: MAC:$mac PORT:$portname" );
         }
 
-        $self->dbw->update_lastseen_switchid($switchid) if ($switchid);
 
         #
         # No port or MAC, This is a test query, Return Accept
         #
         if ( $username =~ /radiustest/ ) {
             EventLog( EVENT_DEBUG, "NAC2 Test Query: IP:$switchip UN:$username" );
-            $ret = ($main::ACCEPT);
-            goto EXITFUNCTION;
-        }
-
-        #
-        # No port or MAC, This is a test query, Return Accept
-        #
-        if ( ( $username ne '' ) && ( $portname eq '' ) && ( $mac eq '' ) ) {
-            EventLog( EVENT_INFO, "Assuming a Test Query: IP:$switchip UN:$username MAC and PORT empty" );
             $ret = ($main::ACCEPT);
             goto EXITFUNCTION;
         }
@@ -431,7 +422,7 @@ sub handle_request {
         #
         if ( $portname eq '' ) {
             EventLog( EVENT_WARN, "No PORTNAME: IP:$switchip MAC:$mac USERNAME:$username PORT empty" );
-            $ret = ($main::ACCEPT);
+            $ret = ($main::REJECT);
             goto EXITFUNCTION;
         }
 
@@ -440,7 +431,7 @@ sub handle_request {
         #
         if ( $mac eq '' ) {
             EventLog( EVENT_WARN, "No MAC: IP:$switchip PORTNAME:$portname USERNAME:$username MAC empty" );
-            $ret = ($main::ACCEPT);
+            $ret = ($main::REJECT);
             goto EXITFUNCTION;
         }
 
@@ -511,7 +502,6 @@ sub handle_request {
         $parm{$DB_COL_SWP_SWID} = $p->{$SWITCHID};
         if ( !$self->dbr->get_switchport( \%parm ) ) {
             EventLog( EVENT_INFO, "NO SWP FOUND: for $portname " );
-
             my $timestring = localtime(time);
             $parm{$DB_COL_SWP_DESC} = "Switch Port $portname Switch:$switchip added by " . __PACKAGE__ . ':' . $timestring;
             my $msg = "Adding Switchport: $switchip, $portname";
@@ -525,16 +515,13 @@ sub handle_request {
 
         $self->dbw->update_lastseen_switchportid($swpid) if ($swpid);
 
-        # EventLog( EVENT_INFO, MYNAMELINE
-        #	. "$pcode IDs: MACID:$p->{$MACID}, SWITHCID:$p->{$SWITCHID}, LOCID:$locid, PORTID:"
-        #	. $p->{$SWITCHPORTID} );
+        EventLog( EVENT_DEBUG, MYNAMELINE . "$pcode IDs: MACID:$p->{$MACID}, SWITHCID:$p->{$SWITCHID}, LOCID:$locid, PORTID:" . $p->{$SWITCHPORTID} );
 
         #----------------
         # Access-Request
         #----------------
         if ( $pcode eq $ACCESS_REQUEST ) {
-            EventLog( EVENT_INFO, MYNAMELINE . '--> ' . $pcode
-                  . " IDs: MACID:$macid, SWITHCID:$switchid, LOCID:$locid, PORTID:$swpid" );
+            EventLog( EVENT_INFO, MYNAMELINE . '--> ' . $pcode . " IDs: MACID:$macid, SWITHCID:$switchid, LOCID:$locid, PORTID:$swpid" );
 
             #
             # Check first to see if the Port is MAGIC if the MAC is defined
@@ -572,12 +559,8 @@ sub handle_request {
             # Skip recording Alive Messages
             #
             if ( 'Alive' ne $type ) {
-                EventLog( EVENT_INFO, '--> ' . $pcode . " $type "
-                      . " IDs: MACID:$macid, SWITHCID:$switchid, LOCID:$locid, PORTID:$swpid" );
-
-                # EventLog( EVENT_INFO, MYNAMELINE . "Accounting-Request for MAC:$mac" );
+                EventLog( EVENT_INFO, '--> ' . $pcode . " $type " . " IDs: MACID:$macid, SWITHCID:$switchid, LOCID:$locid, PORTID:$swpid" );
                 $ret = $self->accounting_request($p);
-
             }
             else {
                 EventLog( EVENT_DEBUG, "Accounting-Request SKIP Request Type: $type" );
@@ -592,8 +575,7 @@ sub handle_request {
         #----------------
         else
         {
-            EventLog( EVENT_ERR, MYNAMELINE
-                  . "UNKNOWN REQUEST: MACID:$p->{'MACID'}, SWITHCID:$p->{'SWITCHID'}, LOCID:$p->{'LOCID'}, PORTID:$p->{$SWITCHPORTID}" );
+            EventLog( EVENT_ERR, MYNAMELINE . "UNKNOWN REQUEST: MACID:$p->{'MACID'}, SWITHCID:$p->{'SWITCHID'}, LOCID:$p->{'LOCID'}, PORTID:$p->{$SWITCHPORTID}" );
 
             # Handler will construct a generic reply for us
             $ret = ($main::REJECT);

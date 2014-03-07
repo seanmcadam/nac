@@ -98,7 +98,7 @@ sub new {
     if ( !defined $sql_parm_ref->{$SQL_PASS} )  { confess; }
     if ( !defined $sql_parm_ref->{$SQL_CLASS} ) { confess; }
 
-    EventLog( EVENT_START, MYNAME . "() started" );
+    EventLog( EVENT_DEBUG, MYNAME . "() started" );
 
     my $db      = $sql_parm_ref->{$SQL_DB};
     my $host    = $sql_parm_ref->{$SQL_HOST};

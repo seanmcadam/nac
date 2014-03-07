@@ -41,7 +41,7 @@ sub new() {
     my ($class) = @_;
     my $self = shift;
 
-    EventLog( EVENT_START, MYNAME . "() started" );
+    EventLog( EVENT_DEBUG, MYNAME . "() started" );
 
     my %parms = ();
     my $config = NAC::ConfigDB->new() || return 0;

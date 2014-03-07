@@ -87,7 +87,7 @@ sub new() {
 
     if ( ( defined $parm_ref ) && ( ref($parm_ref) ne 'HASH' ) ) { confess; }
 
-    EventLog( EVENT_START, MYNAME . "() starting" );
+    EventLog( EVENT_DEBUG, MYNAME . "() starting" );
 
     my %macls;
     my %switchls;
@@ -161,7 +161,7 @@ sub connect_db {
         $NACRADIUSAUDIT => 'NAC::DBRadiusAudit',
     );
 
-    EventLog( EVENT_START, MYNAME . "DB: $db" );
+    EventLog( EVENT_DEBUG, MYNAME . "DB: $db" );
 
     if ( !defined $db_package{$db} ) { confess Dumper @_; }
 

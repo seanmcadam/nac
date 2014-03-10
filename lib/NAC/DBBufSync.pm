@@ -788,8 +788,6 @@ sub sync_switchportstate_id {
     my $ref;
     my $ret = 0;
 
-    EventLog( EVENT_INFO, MYNAMELINE . " Called ID: $id" );
-
     if ( !$self->MAINDB->sql_connected ) {
         EventLog( EVENT_WARN, MYNAMELINE . " NOT CONNECTED to DB" );
         return 0;
@@ -877,14 +875,13 @@ sub sync_lastseen_host {
     my ($self) = @_;
     my $count = 0;
 
-    EventLog( EVENT_INFO, MYNAMELINE . " Called " );
-
     if ( $self->STATUS && ( $self->STATUS->sql_connected || $self->STATUS->reconnect ) ) {
         if ( ( !defined $self->{$HOST_LS_SEND_TIME} ) || ( $self->{$HOST_LS_SEND_TIME} < ( time - $MIN_SEND_TIME ) ) ) {
             if ( !$self->STATUS->update_host_lastseen() ) {
                 EventLog( EVENT_WARN, MYNAMELINE . " Failed to UPDATE HOST " );
             }
             else {
+    		EventLog( EVENT_INFO, MYNAMELINE . " Run " );
                 $self->{$HOST_LS_SEND_TIME} = time;
             }
         }
@@ -903,13 +900,12 @@ sub sync_slave {
     my ( $self, $state ) = @_;
     my $count = 0;
 
-    EventLog( EVENT_DEBUG, MYNAMELINE . " Called " );
-
     if ( $self->STATUS && ( $self->STATUS->sql_connected || $self->STATUS->reconnect ) ) {
         if ( !$self->STATUS->update_slave_status($state) ) {
             EventLog( EVENT_WARN, MYNAMELINE . " Failed SLAVE Checkin " );
         }
         else {
+    	    EventLog( EVENT_DEBUG, MYNAMELINE . " Run " );
             $self->{$HOST_LS_SLAVE_CHECKIN} = time;
         }
     }
@@ -927,8 +923,6 @@ sub sync_slave {
 sub sync_lastseen_location_all {
     my ($self) = @_;
     my $count = 0;
-
-    EventLog( EVENT_INFO, MYNAMELINE . " Called " );
 
     if ( $self->STATUS && ( $self->STATUS->sql_connected || $self->STATUS->reconnect ) ) {
         while ( my $ref = $self->BUF->get_next_lastseen_location( $count++, 1 ) ) {
@@ -960,8 +954,6 @@ sub sync_lastseen_location_id {
     my $count = 0;
     my $ret   = 0;
 
-    EventLog( EVENT_DEBUG, MYNAMELINE . " Called: $id " );
-
     my $lastsend = $self->{$LOCATION_LS_SEND_TIME}->{$id};
 
     if ( ( ( !defined $lastsend ) || ( $lastsend < ( time - $MIN_SEND_TIME ) ) ) ) {
@@ -977,12 +969,13 @@ sub sync_lastseen_location_id {
                             EventLog( EVENT_ERR, MYNAMELINE . " UPDATE LOCATION LASTSEEN FAILED for LOCID:$locid and TIME:$lastseen " );
                         }
                         else {
+    			    EventLog( EVENT_DEBUG, MYNAMELINE . " Run: $locid " );
                             $ret++;
                         }
                     }
                     else {
                         $ret++;
-                        EventLog( EVENT_INFO, MYNAMELINE . " SKIP UPDATE " );
+                        EventLog( EVENT_DEBUG, MYNAMELINE . " SKIP UPDATE " );
                     }
                 }
                 else {
@@ -1015,7 +1008,7 @@ sub sync_lastseen_location_id {
             }
         }
         else {
-            EventLog( EVENT_INFO, MYNAMELINE . " STATUS not connected" );
+            EventLog( EVENT_WARN, MYNAMELINE . " STATUS not connected" );
         }
     }
     else {

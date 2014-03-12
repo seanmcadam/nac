@@ -22,10 +22,15 @@ Switches (hosts) - input of switches (hostname, IPs, location-site,bldg)
 VLANs - a specific network boundry at one location, there can be several IP address ranges in the VLAN which 
 	would result in multiple VLAN entries
 	Each vlan is associated with each switch at a location that supports the vlan
+	Each VLAN is maked as a COE VLAN with a Y/N. If it is yes the vlan is restricted to COE MACs.
 
 
 VlanGroups - A collection of vlans
 
 Templates - A collection of vlangroups
 
+MAC - A unique host identifier
+	Has a first and last seen record.
+	Asset Tag record for associating the device with either an asset tag or a hostname
+	Has a COE indicator specifing if the system is eligable for access to COE vlans
 

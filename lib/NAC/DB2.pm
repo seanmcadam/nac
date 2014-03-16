@@ -1468,8 +1468,8 @@ sub add_switchportstate($$) {
     if ( !defined $parm_ref ) { confess; }
     if ( ref($parm_ref) ne 'HASH' ) { confess; }
     if ( !defined $parm_ref->{$DB_COL_SWPS_SWPID} || ( !( isdigit( $parm_ref->{$DB_COL_SWPS_SWPID} ) ) ) ) { confess Dumper $parm_ref; }
-    if ( defined $parm_ref->{$DB_COL_SWPS_MACID} && ( !( abs( isdigit( $parm_ref->{$DB_COL_SWPS_MACID} ) ) ) ) ) { confess Dumper $parm_ref; }
-###    #if ( defined $parm_ref->{$DB_COL_SWPS_VMACID} && ( !( abs( isdigit( $parm_ref->{$DB_COL_SWPS_VMACID} ) ) ) ) ) { confess Dumper $parm_ref; }
+    if ( defined $parm_ref->{$DB_COL_SWPS_MACID} && ( !( isdigit( abs( $parm_ref->{$DB_COL_SWPS_MACID} ) ) ) ) ) { confess Dumper $parm_ref; }
+    if ( defined $parm_ref->{$DB_COL_SWPS_VMACID} && ( !( isdigit( abs( $parm_ref->{$DB_COL_SWPS_VMACID} ) ) ) ) ) { confess Dumper $parm_ref; }
 
     if ( defined $parm_ref->{$DB_COL_SWPS_LASTUPDATE} ) {
         EventLog( EVENT_WARN, MYNAMELINE() . " ignoring LASTUPDATE " );

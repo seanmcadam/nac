@@ -2916,7 +2916,7 @@ sub get_class_mac_port($$) {
           . ' vlan.vlan               AS vlan, '
           . ' vlan.vlanid             AS vlanid, '
           . ' vlan.vlanname           AS vlanname, '
-          . ' vlan.coe             AS coe, '
+          . ' vlan.coe                AS coe, '
           . " 'PORT-VLAN'             AS authtype, "
           . ' port2class.port2classid AS recordid, '
           . ' class.classid           AS classid, '
@@ -2954,7 +2954,7 @@ sub get_class_mac_port($$) {
           . ' vlan.vlan                       AS vlan, '
           . ' vlan.vlanid                     AS vlanid, '
           . ' vlan.vlanname                   AS vlanname, '
-          . ' vlan.coe                     AS coe, '
+          . ' vlan.coe                        AS coe, '
           . " 'PORT-VLANGROUP'                AS authtype, "
           . ' port2class.port2classid         AS recordid, '
           . ' class.classid                   AS classid, '
@@ -2994,7 +2994,7 @@ sub get_class_mac_port($$) {
           . ' vlan.vlan                       AS vlan, '
           . ' vlan.vlanid                     AS vlanid, '
           . ' vlan.vlanname                   AS vlanname, '
-          . ' vlan.coe                     AS coe, '
+          . ' vlan.coe                        AS coe, '
           . " 'PORT-DEFVLANGROUP'             AS authtype, "
           . ' port2class.port2classid         AS recordid, '
           . ' class.classid                   AS classid, '
@@ -3034,7 +3034,7 @@ sub get_class_mac_port($$) {
           . ' vlan.vlan                  AS vlan, '
           . ' vlan.vlanid                AS vlanid, '
           . ' vlan.vlanname              AS vlanname, '
-          . ' vlan.coe                AS coe, '
+          . ' vlan.coe                   AS coe, '
           . " 'MAC-VLAN'                 AS authtype, "
           . ' mac2class.mac2classid      AS recordid, '
           . ' class.classid              AS classid, '
@@ -3072,7 +3072,7 @@ sub get_class_mac_port($$) {
           . ' vlan.vlan                       AS vlan, '
           . ' vlan.vlanid                     AS vlanid, '
           . ' vlan.vlanname                   AS vlanname, '
-          . ' vlan.coe                     AS coe, '
+          . ' vlan.coe                        AS coe, '
           . " 'MAC-VLANGROUP'                 AS authtype, "
           . ' mac2class.mac2classid           AS recordid, '
           . ' class.classid                   AS classid, '
@@ -3114,7 +3114,7 @@ sub get_class_mac_port($$) {
           . ' vlan.vlan                       AS vlan, '
           . ' vlan.vlanid                     AS vlanid, '
           . ' vlan.vlanname                   AS vlanname, '
-          . ' vlan.coe                     AS coe, '
+          . ' vlan.coe                        AS coe, '
           . " 'MAC-TEMPLATE'                  AS authtype, "
           . ' mac2class.mac2classid           AS recordid, '
           . ' class.classid                   AS classid, '
@@ -3156,7 +3156,7 @@ sub get_class_mac_port($$) {
           . ' vlan.vlan                       AS vlan, '
           . ' vlan.vlanid                     AS vlanid, '
           . ' vlan.vlanname                   AS vlanname, '
-          . ' vlan.coe                     AS coe, '
+          . ' vlan.coe                        AS coe, '
           . " 'MAC-DEFVLANGROUP'              AS authtype, "
           . ' mac2class.mac2classid           AS recordid, '
           . ' class.classid                   AS classid, '
@@ -3666,7 +3666,7 @@ sub get_coe_mac_exception($$) {
     my $ticketref = $parm_ref->{$DB_COL_DME_TICKETREF};
     my $where     = 0;
 
-    my $sql = "SELECT macid,ticketref,created,comment FROM coe_mac_exception "
+    my $sql = "SELECT macid,ticketref,created,comment FROM $DB_TABLE_COE_MAC_EXCEPTION "
       . ( ( defined $id ) ? ( ( !$where++ ) ? 'WHERE' : 'AND' ) . " macid = $id " : '' )
       . ( ( defined $ticketref ) ? ( ( !$where++ ) ? 'WHERE' : 'AND' ) . " ticketref = '$ticketref' " : '' )
       ;

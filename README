@@ -1,5 +1,8 @@
 
 DEV 3.1.x.x
+v3.1.0.0 	- added alternate mac method in AuthNAC2
+		- Corrected bug in add_switchportstate()
+v3.1.0.1	-
 
 Release 3.2.x.x
 

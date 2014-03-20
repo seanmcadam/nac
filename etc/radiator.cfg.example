@@ -1,11 +1,12 @@
 #
 # Configuration file for Radiator radius server
-
+# Set according to your directory structure
+#
 DbDir		/home/nac/radiator
 LogDir		/home/nac/log
 LogFile		%L/radiator-%Y%m%d
 PidFile		/home/nac/run/radiusd.pid
-DictionaryFile %D/dictionary
+DictionaryFile	%D/dictionary
 
 # At level 0 (the default), only serious errors are logged. 
 # At level 1, warnings are also logged
@@ -30,12 +31,11 @@ FarmSize 10
 <Client DEFAULT>
     Secret UberSecretPassword
     DupInterval 0
-   # MAke it work
     IgnoreAcctSignature
 </Client>
 
 #
-# This coresponds to NAC::Radiator::AuthNAC2
+# This coresponds to Radiator::AuthNAC2
 #
 <AuthBy NAC2>
 	Identifier NACAUTHDB

@@ -427,6 +427,22 @@ sub handle_request {
         }
 
         #
+        # MAC addresses can come in as a USERNAME (3850 accounting packets)
+        #
+        if ( ( $mac eq '' ) && ( $username =~ /[0-9a-f]{12}/ ) ) {
+            my @m = split( '', $username );
+            $mac = $m[0] . $m[1] . ':'
+              . $m[2] . $m[3] . ':'
+              . $m[4] . $m[5] . ':'
+              . $m[6] . $m[7] . ':'
+              . $m[8] . $m[9] . ':'
+              . $m[10] . $m[11]
+              ;
+
+            EventLog( EVENT_WARN, "MAC SUBSTITUTE IP:$switchip MAC:$mac <- USERNAME:$username " );
+        }
+
+        #
         # No MAC, this is a problem, return REJECT
         #
         if ( $mac eq '' ) {

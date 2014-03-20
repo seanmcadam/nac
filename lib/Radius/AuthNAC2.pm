@@ -573,6 +573,7 @@ sub handle_request {
 
             #
             # Skip recording Alive Messages
+# Do not skip Alive packets
             #
             if ( 'Alive' ne $type ) {
                 EventLog( EVENT_INFO, '--> ' . $pcode . " $type " . " IDs: MACID:$macid, SWITHCID:$switchid, LOCID:$locid, PORTID:$swpid" );
@@ -628,6 +629,10 @@ sub accounting_request() {
     my %parm = ();
     $parm{$DB_COL_BUF_ADD_RA_SWPID} = $swpid;
     $parm{$DB_COL_BUF_ADD_RA_MACID} = $macid;
+
+    #
+    # Check for Alive packets here (HERE)
+    #
 
     # $parm{$DB_COL_BUF_ADD_RA_AUDIT_SRV} = $hostname;
     $parm{$DB_COL_BUF_ADD_RA_TYPE} = $type;

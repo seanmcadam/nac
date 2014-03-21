@@ -385,6 +385,9 @@ sub handle_request {
                 $p->{$SWITCHNAME} = $parm{$DB_COL_SW_NAME};
 
 
+		#
+		# UPDATE LASTSEEN SWITCHID
+		#
         	$self->dbw->update_lastseen_switchid($switchid);
 
             }
@@ -477,6 +480,9 @@ sub handle_request {
             EventLog( EVENT_DEBUG, "GOT MACID: " . $p->{$MACID} );
         }
 
+	#
+	# UPDATE LASTSEEN MACID
+	#
         $self->dbw->update_lastseen_macid($macid) if ($macid);
 
         #
@@ -507,6 +513,9 @@ sub handle_request {
             EventLog( EVENT_WARN, "NO LOCATION for LOCID: " . $locid );
         }
 
+	#
+	# UPDATE LASTSEEN LOCID
+	#
         $self->dbw->update_lastseen_locationid($locid) if ($locid);
 
         #
@@ -529,6 +538,9 @@ sub handle_request {
             EventLog( EVENT_DEBUG, "GOT SWPID: " . $p->{$SWITCHPORTID} );
         }
 
+	#
+	# UPDATE LASTSEEN SWITCHPORTID
+	#
         $self->dbw->update_lastseen_switchportid($swpid) if ($swpid);
 
         EventLog( EVENT_DEBUG, MYNAMELINE . "$pcode IDs: MACID:$p->{$MACID}, SWITHCID:$p->{$SWITCHID}, LOCID:$locid, PORTID:" . $p->{$SWITCHPORTID} );

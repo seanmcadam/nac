@@ -189,6 +189,7 @@ Readonly our %ACCEPTABLE_DEVICE_MODELS => {
     "c3945e"      => $NO,
     "c4006"       => $NO,
     "c4402-wlc"   => $NO,
+    "c4451-x"     => $NO,
     "c4503"       => $NO,
     "c4506"       => $YES,
     "c5000"       => $NO,

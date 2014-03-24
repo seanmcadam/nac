@@ -1240,7 +1240,7 @@ sub add_radiusaudit($$) {
             $p{$DB_TABLE_NAME}    = $DB_TABLE_MAC;
             $p{$DB_KEY_NAME}      = $DB_KEY_MACID;
             $p{$DB_KEY_VALUE}     = $macid;
-            $p{'UPDATE_lastseen'} = Misc::get_current_timestamp();
+            $p{'UPDATE_lastseen'} = NAC::Misc::get_current_timestamp();
             if ( !$self->update_record( \%p ) ) {
                 EventLog( EVENT_DB_ERR, MYNAMELINE() . " Cannot update MAC lastseen" );
             }
@@ -2236,7 +2236,7 @@ sub check_magic_port($$) {
     }
 
     eval {
-        my $date    = Misc::get_current_timestamp();
+        my $date    = NAC::Misc::get_current_timestamp();
         my $comment = "MAGICPORTed at $date";
         my %p       = ();
         $p{$DB_COL_MAC_ID}  = $macid;
@@ -5361,7 +5361,7 @@ sub update_switchportstate($$) {
         if ( defined $vhostname && ( $vhostname ne $get{$DB_COL_SWPS_VHOSTNAME} ) ) { $parm{$DB_COL_SWPS_VHOSTNAME} = $vhostname; $run_update++; }
 
         if ($run_update) {
-            $parm{$DB_COL_SWPS_LASTUPDATE} = Misc::get_current_timestamp();
+            $parm{$DB_COL_SWPS_LASTUPDATE} = NAC::Misc::get_current_timestamp();
             if ( $ret = $self->update_record_db_col( \%parm ) ) {
                 %parm = ();
                 if ( defined $swpid ) {
@@ -5709,7 +5709,7 @@ sub update_mac_lastseen($$) {
         $lastseen = $parm_ref->{$DB_COL_MAC_LS};
     }
     else {
-        $lastseen = Misc::get_current_timestamp();
+        $lastseen = NAC::Misc::get_current_timestamp();
     }
 
     my %parm = ();
@@ -5807,7 +5807,7 @@ sub update_switch_lastseen($$) {
         $lastseen = $parm_ref->{$DB_COL_SW_LS};
     }
     else {
-        $lastseen = Misc::get_current_timestamp();
+        $lastseen = NAC::Misc::get_current_timestamp();
     }
 
     my %parm = ();

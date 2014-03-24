@@ -126,6 +126,10 @@ sub unlock_record($$);
 sub update_mac_lastseen($$);
 sub update_record($$);
 sub update_record_db_col($$);
+sub clear_data_switchportstate($$);
+sub clear_voice_switchportstate($$);
+sub clear_macid_not_swpsid_switchportstate;
+sub clear_vmacid_not_swpsid_switchportstate;
 sub _verify_MAC;
 
 my $AutoReconnect = 1;
@@ -1468,7 +1472,7 @@ sub add_switchportstate($$) {
     if ( !defined $parm_ref ) { confess; }
     if ( ref($parm_ref) ne 'HASH' ) { confess; }
     if ( !defined $parm_ref->{$DB_COL_SWPS_SWPID} || ( !( isdigit( $parm_ref->{$DB_COL_SWPS_SWPID} ) ) ) ) { confess Dumper $parm_ref; }
-    if ( defined $parm_ref->{$DB_COL_SWPS_MACID} && ( !( isdigit( abs( $parm_ref->{$DB_COL_SWPS_MACID} ) ) ) ) ) { confess Dumper $parm_ref; }
+    if ( defined $parm_ref->{$DB_COL_SWPS_MACID}  && ( !( isdigit( abs( $parm_ref->{$DB_COL_SWPS_MACID} ) ) ) ) )  { confess Dumper $parm_ref; }
     if ( defined $parm_ref->{$DB_COL_SWPS_VMACID} && ( !( isdigit( abs( $parm_ref->{$DB_COL_SWPS_VMACID} ) ) ) ) ) { confess Dumper $parm_ref; }
 
     if ( defined $parm_ref->{$DB_COL_SWPS_LASTUPDATE} ) {
@@ -2417,6 +2421,66 @@ sub clear_voice_switchportstate($$) {
     }
 
     # EventLog( EVENT_INFO, MYNAMELINE . " FINISHED PORT:[$swpid]" );
+
+    $ret;
+
+}
+
+#-------------------------------------------------------
+# Clear out any switchportstate that had MACID, except for the listed swpsid
+#-------------------------------------------------------
+sub clear_macid_not_swpsid_switchportstate {
+    my ( $self, $macid, $swpsid ) = @_;
+    my $ret = 0;
+
+    $self->reseterr;
+
+    NACSyslog::ActivateDebug();
+
+    if ( !defined $swpsid ) { $swpsid = 0; }
+    if ( !isdigit($swpsid) ) { confess "SWPSID $swpsid"; }
+    if ( ( !defined $macid ) || ( !isdigit($macid) ) ) { confess "MACID $macid"; }
+
+    my %clear_swp = ();
+    $clear_swp{$DB_COL_SWPS_MACID} = $macid;
+    if ( $self->get_switchportstate( \%clear_swp ) ) {
+        if ( ( !$swpsid ) || ( $swpsid != $clear_swp{$DB_COL_SWPS_SWPID} ) ) {
+            EventLog( EVENT_DEBUG, MYNAMELINE . " CLEAR DATA SWITCHPORTSTATE FOR MACID:[$macid]" );
+            %clear_swp                     = ();
+            $clear_swp{$DB_COL_SWPS_SWPID} = $swpsid;
+            $ret                           = $self->clear_data_switchportstate( \%clear_swp );
+        }
+    }
+
+    $ret;
+
+}
+
+#-------------------------------------------------------
+#Clear out any switchportstate that had VMACID, except for the listed swpsid
+#-------------------------------------------------------
+sub clear_vmacid_not_swpsid_switchportstate {
+    my ( $self, $vmacid, $swpsid ) = @_;
+    my $ret = 0;
+
+    $self->reseterr;
+
+    NACSyslog::ActivateDebug();
+
+    if ( !defined $swpsid ) { $swpsid = 0; }
+    if ( !isdigit($swpsid) ) { confess "SWPSID $swpsid"; }
+    if ( ( !defined $vmacid ) || ( !isdigit($vmacid) ) ) { confess "VMACID $vmacid"; }
+
+    my %clear_swp = ();
+    $clear_swp{$DB_COL_SWPS_VMACID} = $vmacid;
+    if ( $self->get_switchportstate( \%clear_swp ) ) {
+        if ( ( !$swpsid ) || ( $swpsid != $clear_swp{$DB_COL_SWPS_SWPID} ) ) {
+            EventLog( EVENT_DEBUG, MYNAMELINE . " CLEAR VOICE SWITCHPORTSTATE FOR VMACID:[$vmacid]" );
+            %clear_swp                     = ();
+            $clear_swp{$DB_COL_SWPS_SWPID} = $swpsid;
+            $ret                           = $self->clear_voice_switchportstate( \%clear_swp );
+        }
+    }
 
     $ret;
 

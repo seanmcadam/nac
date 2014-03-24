@@ -62,7 +62,7 @@ Readonly our $NACEVENTLOG             => 'NAC-DATABASE-EVENTLOG';
 Readonly our $NACRADIUSAUDIT          => 'NAC-DATABASE-RADIUSAUDIT';
 Readonly our $SNMPCONN                => 'SNMP-CONN';
 Readonly our $SNMPOK                  => 'SNMP-OK';
-Readonly our $MIN_SEND_TIME           => 60;
+Readonly our $MIN_SEND_TIME           => 10;
 Readonly our $MIN_LOOP_LS_TIME        => 300;
 Readonly our $MIN_LOOP_SYNC_TIME      => 3660;
 Readonly our $MAX_LOOP_COUNT          => 100;
@@ -798,9 +798,23 @@ sub sync_switchportstate_id {
     if ( $self->BUF->get_switchportstate( \%buf_parm ) ) {
         my %db_parm = ();
         my $id = $db_parm{$DB_COL_SWPS_SWPID} = $buf_parm{$DB_COL_BUF_SWPS_SWPID};
+
         if ( $self->LOCALRO->get_switchportstate( \%db_parm ) || $self->MAINDB->get_switchportstate( \%db_parm ) ) {
             if ( $db_parm{$DB_COL_SWPS_LASTUPDATE} lt $buf_parm{$DB_COL_BUF_SWPS_LASTUPDATE} ) {
                 EventLog( EVENT_DEBUG, MYNAMELINE . " UPDATE to DB LOCAL SWPS ID:" . $id . "BUF:" . $buf_parm{$DB_COL_BUF_SWPS_LASTUPDATE} . " DB:" . $db_parm{$DB_COL_BUF_SWPS_LASTUPDATE} );
+
+                my $macid  = ( $db_parm{$DB_COL_BUF_SWPS_MACID} > 0 )  ? $db_parm{$DB_COL_BUF_SWPS_MACID}  : 0;
+                my $vmacid = ( $db_parm{$DB_COL_BUF_SWPS_VMACID} > 0 ) ? $db_parm{$DB_COL_BUF_SWPS_VMACID} : 0;
+
+                if ($macid) {
+                    $self->MAINDB->clear_macid_not_swpsid_switchportstate( $macid, $id );
+                    $self->MAINDB->clear_vmacid_not_swpsid_switchportstate( $macid, $id );
+                }
+
+                if ($vmacid) {
+                    $self->MAINDB->clear_macid_not_swpsid_switchportstate( $vmacid, $id );
+                    $self->MAINDB->clear_vmacid_not_swpsid_switchportstate( $vmacid, $id );
+                }
 
                 $db_parm{$DB_COL_SWPS_HOSTNAME}   = $hostname;
                 $db_parm{$DB_COL_SWPS_VHOSTNAME}  = $hostname;
@@ -835,6 +849,19 @@ sub sync_switchportstate_id {
         else {
             EventLog( EVENT_WARN, MYNAMELINE . " SWITCHPORTSTATE ID:$id not found, Add it " );
 
+            my $macid  = ( $buf_parm{$DB_COL_BUF_SWPS_MACID} > 0 )  ? $buf_parm{$DB_COL_BUF_SWPS_MACID}  : 0;
+            my $vmacid = ( $buf_parm{$DB_COL_BUF_SWPS_VMACID} > 0 ) ? $buf_parm{$DB_COL_BUF_SWPS_VMACID} : 0;
+
+            if ($macid) {
+                $self->MAINDB->clear_macid_not_swpsid_switchportstate($macid);
+                $self->MAINDB->clear_vmacid_not_swpsid_switchportstate($macid);
+            }
+
+            if ($vmacid) {
+                $self->MAINDB->clear_macid_not_swpsid_switchportstate($vmacid);
+                $self->MAINDB->clear_vmacid_not_swpsid_switchportstate($vmacid);
+            }
+
             $db_parm{$DB_COL_SWPS_SWPID}    = $buf_parm{$DB_COL_BUF_SWPS_SWPID};
             $db_parm{$DB_COL_SWPS_MACID}    = $buf_parm{$DB_COL_BUF_SWPS_MACID};
             $db_parm{$DB_COL_SWPS_CLASSID}  = $buf_parm{$DB_COL_BUF_SWPS_CLASSID};
@@ -846,16 +873,17 @@ sub sync_switchportstate_id {
             $db_parm{$DB_COL_SWPS_VVGID}    = $buf_parm{$DB_COL_BUF_SWPS_VVGID};
             $db_parm{$DB_COL_SWPS_VVLANID}  = $buf_parm{$DB_COL_BUF_SWPS_VVLANID};
             $db_parm{$DB_COL_SWPS_VTEMPID}  = $buf_parm{$DB_COL_BUF_SWPS_VTEMPID};
-            if ( $db_parm{$DB_COL_SWPS_MACID} ) {
+
+            if ( $db_parm{$DB_COL_SWPS_MACID} > 0 ) {
                 $db_parm{$DB_COL_SWPS_HOSTNAME} = $hostname;
             }
-            if ( $db_parm{$DB_COL_SWPS_VMACID} ) {
+            if ( $db_parm{$DB_COL_SWPS_VMACID} > 0 ) {
                 $db_parm{$DB_COL_SWPS_VHOSTNAME} = $hostname
             }
+
             if ( !$self->MAINDB->add_switchportstate( \%db_parm ) ) {
                 EventLog( EVENT_ERR, MYNAMELINE . " FAILED to UPDATE to DB LOCAL SWPS ID:" . $id );
             }
-
         }
 
         $ret++;
@@ -881,7 +909,7 @@ sub sync_lastseen_host {
                 EventLog( EVENT_WARN, MYNAMELINE . " Failed to UPDATE HOST " );
             }
             else {
-    		EventLog( EVENT_INFO, MYNAMELINE . " Run " );
+                EventLog( EVENT_INFO, MYNAMELINE . " Run " );
                 $self->{$HOST_LS_SEND_TIME} = time;
             }
         }
@@ -905,7 +933,7 @@ sub sync_slave {
             EventLog( EVENT_WARN, MYNAMELINE . " Failed SLAVE Checkin " );
         }
         else {
-    	    EventLog( EVENT_DEBUG, MYNAMELINE . " Run " );
+            EventLog( EVENT_DEBUG, MYNAMELINE . " Run " );
             $self->{$HOST_LS_SLAVE_CHECKIN} = time;
         }
     }
@@ -969,7 +997,7 @@ sub sync_lastseen_location_id {
                             EventLog( EVENT_ERR, MYNAMELINE . " UPDATE LOCATION LASTSEEN FAILED for LOCID:$locid and TIME:$lastseen " );
                         }
                         else {
-    			    EventLog( EVENT_DEBUG, MYNAMELINE . " Run: $locid " );
+                            EventLog( EVENT_DEBUG, MYNAMELINE . " Run: $locid " );
                             $ret++;
                         }
                     }

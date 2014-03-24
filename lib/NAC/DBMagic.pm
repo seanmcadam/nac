@@ -378,7 +378,7 @@ sub check_magic_port {
 
     if ($ret) {
 
-        my $date    = NACMisc::get_current_timestamp();
+        my $date    = Misc::get_current_timestamp();
         my $comment = "MAGICPORTed at $date";
         my %p       = ();
         $p{$DB_COL_MAC_ID}  = $macid;

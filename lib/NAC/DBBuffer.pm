@@ -2285,8 +2285,6 @@ sub clear_data_switchportstate {
 
     $self->reseterr;
 
-    NACSyslog::ActivateDebug();
-
     EventLog( EVENT_DEBUG, MYNAMELINE() . " called" );
 
     if ( !defined $parm_ref ) { confess @_; }

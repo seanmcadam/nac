@@ -2259,8 +2259,6 @@ sub clear_data_switchportstate($$) {
 
     $self->reseterr;
 
-    NACSyslog::ActivateDebug();
-
     EventLog( EVENT_DEBUG, MYNAMELINE() . " called" );
 
     if ( !defined $parm_ref ) { confess; }
@@ -2435,8 +2433,6 @@ sub clear_macid_not_swpsid_switchportstate {
 
     $self->reseterr;
 
-    NACSyslog::ActivateDebug();
-
     if ( !defined $swpsid ) { $swpsid = 0; }
     if ( !isdigit($swpsid) ) { confess "SWPSID $swpsid"; }
     if ( ( !defined $macid ) || ( !isdigit($macid) ) ) { confess "MACID $macid"; }
@@ -2464,8 +2460,6 @@ sub clear_vmacid_not_swpsid_switchportstate {
     my $ret = 0;
 
     $self->reseterr;
-
-    NACSyslog::ActivateDebug();
 
     if ( !defined $swpsid ) { $swpsid = 0; }
     if ( !isdigit($swpsid) ) { confess "SWPSID $swpsid"; }
@@ -7928,7 +7922,7 @@ sub EventDBLog ($$) {
     EventLog( EVENT_INFO, MYNAMELINE() . " called" );
 
     if ( !defined $self->{NACDBBUFFER} ) {
-        $self->{NACDBBUFFER} = NACDBBuffer->new();
+        $self->{NACDBBUFFER} = NAC::DBBuffer->new();
     }
 
     eval {

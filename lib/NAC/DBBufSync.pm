@@ -909,7 +909,6 @@ sub sync_lastseen_host {
                 EventLog( EVENT_WARN, MYNAMELINE . " Failed to UPDATE HOST " );
             }
             else {
-                EventLog( EVENT_INFO, MYNAMELINE . " Run " );
                 $self->{$HOST_LS_SEND_TIME} = time;
             }
         }
@@ -1235,26 +1234,45 @@ sub sync_lastseen_switch_id {
     my $count = 0;
     my $ret   = 0;
 
+    #
+    # Verify connection to Master Status database table
+    #
     if ( !( $self->STATUS && ( $self->STATUS->sql_connected || $self->STATUS->reconnect ) ) ) {
         EventLog( EVENT_WARN, MYNAMELINE . " STATUS not connected" );
         return 0;
     }
 
+    #
+    # Get last send time
+    #
     my $last_send_time = ( defined $self->{$SWITCH_LS_SEND_TIME} ) ? $self->{$SWITCH_LS_SEND_TIME}->{$id} : undef;
 
     EventLog( EVENT_DEBUG, MYNAMELINE . " Called: $id  SEND_TIME:" . $self->{$SWITCH_LS_SEND_TIME}->{$id} . " time:" . ( time - $MIN_SEND_TIME ) ) if defined $last_send_time;
 
+    #
+    # If last send time DNE, or is > current time - MIN_SEND_TIME 
+    # 	then update
+    #
     if ( ( !defined $last_send_time ) || ( $last_send_time > ( time - $MIN_SEND_TIME ) ) ) {
 
+	#
+	# Verify that the switchid is in the local BUFFER table
+	#
         if ( my $ref = $self->BUF->get_lastseen_switch($id) ) {
             my $swid     = $ref->{$DB_COL_BUF_LASTSEEN_SWITCH_ID};
             my $lastseen = $ref->{$DB_COL_BUF_LASTSEEN_SWITCH_LASTSEEN};
 
+		#
+		# Get STATUS switch data
+		#
             if ( my $ref = $self->STATUS->get_switch($swid) ) {
                 my $db_lastseen = $ref->{$DB_COL_STATUS_SWITCH_LASTSEEN};
 
                 # EventLog( EVENT_INFO, MYNAMELINE . " Compare LOCAL:$lastseen to DB:$db_lastseen " );
 
+	    	#
+	    	# Compare lastsend time, if buffer is newer update the STATUS table
+	    	#
                 if ( $db_lastseen lt $lastseen ) {
 
                     EventLog( EVENT_INFO, MYNAMELINE . " UPDATE DB from $db_lastseen TO LOCAL:$lastseen " );
@@ -1272,6 +1290,9 @@ sub sync_lastseen_switch_id {
                     $ret++;
                 }
             }
+	    #
+	    # Switch does not exist yet so create it
+	    #
             else {
                 my %parm_get = ();
                 $parm_get{$DB_COL_SW_ID} = $id;
@@ -1281,7 +1302,7 @@ sub sync_lastseen_switch_id {
                     $parm{$DB_COL_STATUS_SWITCH_SWITCHNAME} = $parm_get{$DB_COL_SW_NAME};
                     $parm{$DB_COL_STATUS_SWITCH_LOCATIONID} = $parm_get{$DB_COL_SW_LOCID};
                     if ( !( $self->STATUS->add_switch( \%parm ) ) ) {
-                        EventLog( EVENT_ERR, MYNAMELINE . " FAILED to add SWID $id in Status DB" );
+                        EventLog( EVENT_ERR, MYNAMELINE . " FAILED to add SWID $id in STATUS DB" );
                     }
                     else {
                         $ret++;
@@ -1296,12 +1317,15 @@ sub sync_lastseen_switch_id {
                 $self->{$SWITCH_LS_SEND_TIME}->{$id} = time;
             }
         }
+	#
+	# SWITCHID is not in buffer table, this will create it and restart the update process
+	#
         else {
             $self->BUF->update_lastseen_switchid($id);
         }
     }
     else {
-        EventLog( EVENT_INFO, MYNAMELINE . " STATUS too soon to update ID: $id, LST: $last_send_time < " . ( time - $MIN_SEND_TIME ) );
+        EventLog( EVENT_INFO, MYNAMELINE . " STATUS too soon to update ID: $id, LST: " . localtime($last_send_time) ." < " . localtime( time - $MIN_SEND_TIME ) );
     }
     $ret;
 }

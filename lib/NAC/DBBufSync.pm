@@ -62,7 +62,7 @@ Readonly our $NACEVENTLOG             => 'NAC-DATABASE-EVENTLOG';
 Readonly our $NACRADIUSAUDIT          => 'NAC-DATABASE-RADIUSAUDIT';
 Readonly our $SNMPCONN                => 'SNMP-CONN';
 Readonly our $SNMPOK                  => 'SNMP-OK';
-Readonly our $MIN_SEND_TIME           => 10;
+Readonly our $MIN_SEND_TIME           => 90;
 Readonly our $MIN_LOOP_LS_TIME        => 300;
 Readonly our $MIN_LOOP_SYNC_TIME      => 3660;
 Readonly our $MAX_LOOP_COUNT          => 100;
@@ -1253,7 +1253,7 @@ sub sync_lastseen_switch_id {
     # If last send time DNE, or is > current time - MIN_SEND_TIME 
     # 	then update
     #
-    if ( ( !defined $last_send_time ) || ( $last_send_time > ( time - $MIN_SEND_TIME ) ) ) {
+    if ( ( !defined $last_send_time ) || ( $last_send_time < ( time - $MIN_SEND_TIME ) ) ) {
 
 	#
 	# Verify that the switchid is in the local BUFFER table
@@ -1273,7 +1273,7 @@ sub sync_lastseen_switch_id {
 	    	#
 	    	# Compare lastsend time, if buffer is newer update the STATUS table
 	    	#
-                if ( $db_lastseen lt $lastseen ) {
+                if ( $db_lastseen < ( $lastseen - $MIN_SEND_TIME )) {
 
                     EventLog( EVENT_INFO, MYNAMELINE . " UPDATE DB from $db_lastseen TO LOCAL:$lastseen " );
 
@@ -1325,7 +1325,7 @@ sub sync_lastseen_switch_id {
         }
     }
     else {
-        EventLog( EVENT_INFO, MYNAMELINE . " STATUS too soon to update ID: $id, LST: " . localtime($last_send_time) ." < " . localtime( time - $MIN_SEND_TIME ) );
+        EventLog( EVENT_INFO, MYNAMELINE . " STATUS too soon to update ID: $id, LST: " . localtime($last_send_time) ." > MIN:" . localtime( time - $MIN_SEND_TIME ) );
     }
     $ret;
 }

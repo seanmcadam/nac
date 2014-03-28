@@ -27,10 +27,12 @@ Readonly our $HASH_REF => 'HASH_REF';
 Readonly our $YES      => 1;
 Readonly our $NO       => 0;
 
-Readonly our $DEFAULT_IDLE_TIMEOUT      => '21000';
-Readonly our $MINIMUM_IDLE_TIMEOUT      => '600';
-Readonly our $DEFAULT_SESSION_TIMEOUT   => '600';
-Readonly our $MINIMUM_SESSION_TIMEOUT   => '60';
+Readonly our $MINIMUM_IDLE_TIMEOUT      => 60 * 5;              # 5  Min
+Readonly our $DEFAULT_IDLE_TIMEOUT      => 60 * 60 * 6;         # 6  Hours
+Readonly our $MAXIMUM_IDLE_TIMEOUT      => 60 * 60 * 12;        # 12 Hours
+Readonly our $MINIMUM_SESSION_TIMEOUT   => 60;                  # 1  Min
+Readonly our $DEFAULT_SESSION_TIMEOUT   => 60 * 5;              # 5  Min
+Readonly our $MAXIMUM_SESSION_TIMEOUT   => 60 * 60 * 24;        # 1  Day
 Readonly our $CLASS_NAME_BLOCK          => 'BLOCKEDMAC';
 Readonly our $CLASS_NAME_CHALLENGE      => 'CHALLENGE';
 Readonly our $CLASS_NAME_COE            => 'COE';

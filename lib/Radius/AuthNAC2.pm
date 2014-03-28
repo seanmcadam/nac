@@ -1174,7 +1174,16 @@ sub access_request() {
     # Set  Idle Parameter
     # This is Idle-Timeout Attr[28] -> (21000)
     #
+    #
+    # MAC Idle Timeout for 3850 is less then other models. So keep the value reasonable
+    #
     my $idle_timeout = ($idletimeout) ? $idletimeout : $DEFAULT_IDLE_TIMEOUT;
+    if($idletimeout <  $MINIMUM_IDLE_TIMEOUT ) {
+	 $idletimeout = $MINIMUM_IDLE_TIMEOUT;
+	}
+    elsif ($idletimeout >  $MAXIMUM_IDLE_TIMEOUT ) {
+	 $idletimeout = $MAXIMUM_IDLE_TIMEOUT;
+	}
     $p->{rp}->add_attr( 'Idle-Timeout', $idle_timeout );
 
     #

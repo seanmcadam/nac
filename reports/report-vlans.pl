@@ -9,6 +9,8 @@ use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Data::Dumper;
 use Carp;
+use NAC::Constatnts;
+use NAC::DBConsts;
 use NAC::DBReadOnly;
 use strict;
 
@@ -29,11 +31,11 @@ foreach my $v ( keys(%vlans) ) {
 }
 
 foreach my $v ( sort( keys(%vlans_by_name) ) ) {
-    my $name   = $v;
-    my $vlan   = $vlans_by_name{$v}->{$DB_COL_VLAN_VLAN};
-    my $cidr   = $vlans_by_name{$v}->{$DB_COL_VLAN_CIDR};
-    my $type   = $vlans_by_name{$v}->{$DB_COL_VLAN_TYPE};
-    my $doecoe = $vlans_by_name{$v}->{$DB_COL_VLAN_DOECOE};
-    print "$name,$vlan,$cidr,$type,$doecoe\n";
+    my $name = $v;
+    my $vlan = $vlans_by_name{$v}->{$DB_COL_VLAN_VLAN};
+    my $cidr = $vlans_by_name{$v}->{$DB_COL_VLAN_CIDR};
+    my $type = $vlans_by_name{$v}->{$DB_COL_VLAN_TYPE};
+    my $coe  = $vlans_by_name{$v}->{$DB_COL_VLAN_COE};
+    print "$name,$vlan,$cidr,$type,$coe\n";
 }
 

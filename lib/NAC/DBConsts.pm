@@ -666,9 +666,8 @@ Readonly our %column_names => (
     $DB_COL_VLAN_ID                          => 'vlanid',
     $DB_COL_VLAN_LOCID                       => 'locid',
     $DB_COL_VLAN_VLAN                        => 'vlan',
-#    $DB_COL_VLAN_TYPE                        => 'type',
+    $DB_COL_VLAN_TYPE                        => 'type',
     $DB_COL_VLAN_CIDR                        => 'cidr',
-#    $DB_COL_VLAN_NACIP                       => 'nacip',
     $DB_COL_VLAN_NAME                        => 'vlanname',
     $DB_COL_VLAN_DESC                        => 'vlandescription',
     $DB_COL_VLAN_ACT                         => 'active',
@@ -1131,7 +1130,6 @@ our @EXPORT = qw (
   $DB_COL_VLAN_VLAN
   $DB_COL_VLAN_TYPE
   $DB_COL_VLAN_CIDR
-  $DB_COL_VLAN_NACIP
   $DB_COL_VLAN_NAME
   $DB_COL_VLAN_DESC
   $DB_COL_VLAN_ACT

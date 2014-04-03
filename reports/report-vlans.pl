@@ -12,7 +12,11 @@ use Carp;
 use NAC::Constants;
 use NAC::DBConsts;
 use NAC::DBReadOnly;
+use NAC::Syslog;
 use strict;
+
+
+NAC::Syslog::ActivateDebug();
 
 my $ro = NAC::DBReadOnly->new();
 

@@ -16,7 +16,7 @@ use NAC::Syslog;
 use strict;
 
 
-NAC::Syslog::ActivateDebug();
+NAC::Syslog::DeactivateDebug();
 
 my $ro = NAC::DBReadOnly->new();
 
@@ -40,7 +40,6 @@ foreach my $v ( sort( keys(%vlans_by_name) ) ) {
     my $cidr = $vlans_by_name{$v}->{$DB_COL_VLAN_CIDR};
     my $type = $vlans_by_name{$v}->{$DB_COL_VLAN_TYPE};
     my $coe  = $vlans_by_name{$v}->{$DB_COL_VLAN_COE};
-    print Dumper $vlans_by_name{$v};
     print "$name,$vlan,$cidr,$type," . (($coe)?"1":"0") . "\n";
 }
 

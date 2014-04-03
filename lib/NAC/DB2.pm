@@ -4968,10 +4968,11 @@ sub get_vlan($$) {
 
     if ( !defined $parm_ref ) { confess; }
     if ( ref($parm_ref) ne 'HASH' ) { confess; }
-    if ( defined( $parm_ref->{$HASH_REF} ) && ref( $parm_ref->{$HASH_REF} ) ne 'HASH' ) { confess Dumper $parm_ref; }
+    if ( defined $parm_ref->{$HASH_REF}          && ref( $parm_ref->{$HASH_REF} ) ne 'HASH' ) { confess Dumper $parm_ref; }
     if ( defined $parm_ref->{$DB_COL_VLAN_ID}    && ( !( isdigit $parm_ref->{$DB_COL_VLAN_ID} ) ) )    { confess Dumper $parm_ref; }
     if ( defined $parm_ref->{$DB_COL_VLAN_LOCID} && ( !( isdigit $parm_ref->{$DB_COL_VLAN_LOCID} ) ) ) { confess Dumper $parm_ref; }
     if ( defined $parm_ref->{$DB_COL_VLAN_VLAN}  && ( !( isdigit $parm_ref->{$DB_COL_VLAN_VLAN} ) ) )  { confess Dumper $parm_ref; }
+    if ( defined $parm_ref->{$DB_COL_VLAN_COE}   && ( !( isdigit $parm_ref->{$DB_COL_VLAN_COE} ) ) )   { confess Dumper $parm_ref; }
     if ( defined $parm_ref->{$DB_COL_VLAN_TYPE}  && $parm_ref->{$DB_COL_VLAN_TYPE}  eq '' ) { confess Dumper $parm_ref; }
     if ( defined $parm_ref->{$DB_COL_VLAN_CIDR}  && $parm_ref->{$DB_COL_VLAN_CIDR}  eq '' ) { confess Dumper $parm_ref; }
     if ( defined $parm_ref->{$DB_COL_VLAN_NACIP} && $parm_ref->{$DB_COL_VLAN_NACIP} eq '' ) { confess Dumper $parm_ref; }
@@ -4987,6 +4988,8 @@ sub get_vlan($$) {
     my $nacip    = $parm_ref->{$DB_COL_VLAN_NACIP};
     my $active   = $parm_ref->{$DB_COL_VLAN_ACT};
     my $name     = $parm_ref->{$DB_COL_VLAN_NAME};
+    my $coe      = $parm_ref->{$DB_COL_VLAN_COE};
+    my $comment  = $parm_ref->{$DB_COL_VLAN_COM};
     my $where    = 0;
 
     my $sql = "SELECT vlanid,vlanname,vlan,type,locationid,cidr,nacip,vlandescription,active,comment FROM vlan "
@@ -4997,6 +5000,7 @@ sub get_vlan($$) {
       . ( ( defined $cidr )   ? ( ( !$where++ ) ? 'WHERE' : 'AND' ) . " cidr = '$cidr' "      : '' )
       . ( ( defined $nacip )  ? ( ( !$where++ ) ? 'WHERE' : 'AND' ) . " nacip = '$nacip' "    : '' )
       . ( ( defined $active ) ? ( ( !$where++ ) ? 'WHERE' : 'AND' ) . " active = $active "    : '' )
+      . ( ( defined $coe )    ? ( ( !$where++ ) ? 'WHERE' : 'AND' ) . " coe = $coe "          : '' )
       . ( ( defined $name )   ? ( ( !$where++ ) ? 'WHERE' : 'AND' ) . " vlanname = '$name' "  : '' )
       ;
 
@@ -5013,6 +5017,7 @@ sub get_vlan($$) {
                 $parm_ref->{$DB_COL_VLAN_NACIP} = $answer[ $col++ ];
                 $parm_ref->{$DB_COL_VLAN_DESC}  = $answer[ $col++ ];
                 $parm_ref->{$DB_COL_VLAN_ACT}   = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_VLAN_COE}   = $answer[ $col++ ];
                 $parm_ref->{$DB_COL_VLAN_COM}   = $answer[ $col++ ];
                 $ret++;
             }

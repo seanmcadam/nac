@@ -3776,6 +3776,7 @@ sub get_mac($$) {
     if ( defined $parm_ref->{$DB_COL_MAC_ACT} && !isdigit( $parm_ref->{$DB_COL_MAC_ACT} ) ) { confess Dumper $parm_ref; }
     if ( defined $parm_ref->{$DB_COL_MAC_AT} && ( $parm_ref->{$DB_COL_MAC_AT} eq '' ) ) { confess Dumper $parm_ref; }
     if ( defined $parm_ref->{$DB_COL_MAC_LOCKED} && !isdigit( $parm_ref->{$DB_COL_MAC_LOCKED} ) ) { confess Dumper $parm_ref; }
+    if ( defined $parm_ref->{$DB_COL_MAC_COE} && !isdigit( $parm_ref->{$DB_COL_MAC_COE} ) ) { confess Dumper $parm_ref; }
 
     my $hash_ref = $parm_ref->{$HASH_REF};
     my $id       = $parm_ref->{$DB_COL_MAC_ID};
@@ -3785,6 +3786,7 @@ sub get_mac($$) {
     my $at       = $parm_ref->{$DB_COL_MAC_AT};
     my $active   = $parm_ref->{$DB_COL_MAC_ACT};
     my $locked   = $parm_ref->{$DB_COL_MAC_LOCKED};
+    my $coe      = $parm_ref->{$DB_COL_MAC_COE};
     my $sort_id  = $parm_ref->{$DB_SORT_MAC_ID};
     my $sort_mac = $parm_ref->{$DB_SORT_MAC_MAC};
     my $where    = 0;
@@ -3793,7 +3795,7 @@ sub get_mac($$) {
     if ( defined $mac && !_verify_MAC($mac) ) { confess ": BAD MAC: '$mac' "; }
 
     #    my $sql = "SELECT macid,mac,firstseen,lastseen,laststatechange,description,assettag,active,locked,comment FROM mac "
-    my $sql = "SELECT macid,mac,firstseen,lastseen,laststatechange,description,assettag,active,locked,comment FROM mac "
+    my $sql = "SELECT macid,mac,firstseen,lastseen,laststatechange,description,assettag,active,locked,comment,coe FROM mac "
       . ( ( defined $id )       ? ( ( !$where++ ) ? 'WHERE'    : 'AND' ) . " macid = $id "       : '' )
       . ( ( defined $mac )      ? ( ( !$where++ ) ? 'WHERE'    : 'AND' ) . " mac = '$mac' "      : '' )
       . ( ( defined $fs )       ? ( ( !$where++ ) ? 'WHERE'    : 'AND' ) . " firstseen = '$fs' " : '' )
@@ -3801,6 +3803,7 @@ sub get_mac($$) {
       . ( ( defined $at )       ? ( ( !$where++ ) ? 'WHERE'    : 'AND' ) . " assettag = '$at' "  : '' )
       . ( ( defined $active )   ? ( ( !$where++ ) ? 'WHERE'    : 'AND' ) . " active = $active "  : '' )
       . ( ( defined $locked )   ? ( ( !$where++ ) ? 'WHERE'    : 'AND' ) . " locked = $locked "  : '' )
+      . ( ( defined $coe )      ? ( ( !$where++ ) ? 'WHERE'    : 'AND' ) . " coe = $coe "  : '' )
       . ( ( defined $sort_id )  ? ( ( !$sort++ )  ? 'ORDER BY' : ', ' ) . " macid "              : '' )
       . ( ( defined $sort_mac ) ? ( ( !$sort++ )  ? 'ORDER BY' : ', ' ) . " mac "                : '' )
       ;
@@ -3821,6 +3824,7 @@ sub get_mac($$) {
                 $h{$DB_COL_MAC_ACT}       = $answer[ $col++ ];    # 7
                 $h{$DB_COL_MAC_LOCKED}    = $answer[ $col++ ];    # 8
                 $h{$DB_COL_MAC_COM}       = $answer[ $col++ ];    # 9
+                $h{$DB_COL_MAC_COE}       = $answer[ $col++ ];    # 10
                 $ret++;
             }
         }
@@ -3837,6 +3841,7 @@ sub get_mac($$) {
                 $parm_ref->{$DB_COL_MAC_ACT}    = $answer[ $col++ ];    # 7
                 $parm_ref->{$DB_COL_MAC_LOCKED} = $answer[ $col++ ];    # 8
                 $parm_ref->{$DB_COL_MAC_COM}    = $answer[ $col++ ];    # 9
+                $parm_ref->{$DB_COL_MAC_COE}    = $answer[ $col++ ];    # 10
                 $ret++;
             }
         }

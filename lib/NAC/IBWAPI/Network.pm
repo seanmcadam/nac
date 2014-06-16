@@ -7,148 +7,123 @@
 
 package NAC::IBWAPI::Network;
 use FindBin;
-use Readonly;
 use lib "$FindBin::Bin/../..";
+use Readonly;
+use strict;
 use base qw( Exporter );
+our @ISA = qw(NAC::IBWAPI);
 
-Readonly our $authority                           => 'authority';
-Readonly our $auto_create_reversezone             => 'auto_create_reversezone';
-Readonly our $bootfile                            => 'bootfile';
-Readonly our $bootserver                          => 'bootserver';
-Readonly our $comment                             => 'comment';
-Readonly our $ddns_domainname                     => 'ddns_domainname';
-Readonly our $ddns_generate_hostname              => 'ddns_generate_hostname';
-Readonly our $ddns_server_always_updates          => 'ddns_server_always_updates';
-Readonly our $ddns_ttl                            => 'ddns_ttl';
-Readonly our $ddns_update_fixed_addresses         => 'ddns_update_fixed_addresses';
-Readonly our $ddns_use_option81                   => 'ddns_use_option81';
-Readonly our $deny_bootp                          => 'deny_bootp';
-Readonly our $disable                             => 'disable';
-Readonly our $email_list                          => 'email_list';
-Readonly our $enable_ddns                         => 'enable_ddns';
-Readonly our $enable_dhcp_thresholds              => 'enable_dhcp_thresholds';
-Readonly our $enable_email_warnings               => 'enable_email_warnings';
-Readonly our $enable_ifmap_publishing             => 'enable_ifmap_publishing';
-Readonly our $enable_snmp_warnings                => 'enable_snmp_warnings';
-Readonly our $extattrs                            => 'extattrs';
-Readonly our $high_water_mark                     => 'high_water_mark';
-Readonly our $high_water_mark_reset               => 'high_water_mark_reset';
-Readonly our $ignore_dhcp_option_list_request     => 'ignore_dhcp_option_list_request';
-Readonly our $ipv4addr                            => 'ipv4addr';
-Readonly our $lease_scavenge_time                 => 'lease_scavenge_time';
-Readonly our $low_water_mark                      => 'low_water_mark';
-Readonly our $low_water_mark_reset                => 'low_water_mark_reset';
-Readonly our $members                             => 'members';
-Readonly our $netmask                             => 'netmask';
-Readonly our $network                             => 'network';
-Readonly our $network_container                   => 'network_container';
-Readonly our $network_view                        => 'network_view';
-Readonly our $nextserver                          => 'nextserver';
-Readonly our $options                             => 'options';
-Readonly our $pxe_lease_time                      => 'pxe_lease_time';
-Readonly our $recycle_leases                      => 'recycle_leases';
-Readonly our $template                            => 'template';
-Readonly our $update_dns_on_lease_renewal         => 'update_dns_on_lease_renewal';
-Readonly our $use_authority                       => 'use_authority';
-Readonly our $use_bootfile                        => 'use_bootfile';
-Readonly our $use_bootserver                      => 'use_bootserver';
-Readonly our $use_ddns_domainname                 => 'use_ddns_domainname';
-Readonly our $use_ddns_generate_hostname          => 'use_ddns_generate_hostname';
-Readonly our $use_ddns_ttl                        => 'use_ddns_ttl';
-Readonly our $use_ddns_update_fixed_addresses     => 'use_ddns_update_fixed_addresses';
-Readonly our $use_ddns_use_option81               => 'use_ddns_use_option81';
-Readonly our $use_deny_bootp                      => 'use_deny_bootp';
-Readonly our $use_email_list                      => 'use_email_list';
-Readonly our $use_enable_ddns                     => 'use_enable_ddns';
-Readonly our $use_enable_dhcp_thresholds          => 'use_enable_dhcp_thresholds';
-Readonly our $use_enable_ifmap_publishing         => 'use_enable_ifmap_publishing';
-Readonly our $use_ignore_dhcp_option_list_request => 'use_ignore_dhcp_option_list_request';
-Readonly our $use_lease_scavenge_time             => 'use_lease_scavenge_time';
-Readonly our $use_nextserver                      => 'use_nextserver';
-Readonly our $use_options                         => 'use_options';
-Readonly our $use_recycle_leases                  => 'use_recycle_leases';
-Readonly our $use_update_dns_on_lease_renewal     => 'use_update_dns_on_lease_renewal';
-Readonly our $use_zone_associations               => 'use_zone_associations';
-Readonly our $zone_associations                   => 'zone_associations';
 
-our @ISA    = qw(NAC::IBWAPI);
+sub GET;
+
 our @EXPORT = qw (
+GET
 );
 
-#
-# Optionl point to a JSON object from a get for a network object
-#
-sub new() {
+Readonly our %return_fields => (
+    $authority                           => 'authority',
+    $auto_create_reversezone             => 'auto_create_reversezone',
+    $bootfile                            => 'bootfile',
+    $bootserver                          => 'bootserver',
+    $comment                             => 'comment',
+    $ddns_domainname                     => 'ddns_domainname',
+    $ddns_generate_hostname              => 'ddns_generate_hostname',
+    $ddns_server_always_updates          => 'ddns_server_always_updates',
+    $ddns_ttl                            => 'ddns_ttl',
+    $ddns_update_fixed_addresses         => 'ddns_update_fixed_addresses',
+    $ddns_use_option81                   => 'ddns_use_option81',
+    $deny_bootp                          => 'deny_bootp',
+    $disable                             => 'disable',
+    $email_list                          => 'email_list',
+    $enable_ddns                         => 'enable_ddns',
+    $enable_dhcp_thresholds              => 'enable_dhcp_thresholds',
+    $enable_email_warnings               => 'enable_email_warnings',
+    $enable_ifmap_publishing             => 'enable_ifmap_publishing',
+    $enable_snmp_warnings                => 'enable_snmp_warnings',
+    $extattrs                            => 'extattrs',
+    $high_water_mark                     => 'high_water_mark',
+    $high_water_mark_reset               => 'high_water_mark_reset',
+    $ignore_dhcp_option_list_request     => 'ignore_dhcp_option_list_request',
+    $ipv4addr                            => 'ipv4addr',
+    $lease_scavenge_time                 => 'lease_scavenge_time',
+    $low_water_mark                      => 'low_water_mark',
+    $low_water_mark_reset                => 'low_water_mark_reset',
+    $members                             => 'members',
+    $netmask                             => 'netmask',
+    $network                             => 'network',
+    $network_container                   => 'network_container',
+    $network_view                        => 'network_view',
+    $nextserver                          => 'nextserver',
+    $options                             => 'options',
+    $pxe_lease_time                      => 'pxe_lease_time',
+    $recycle_leases                      => 'recycle_leases',
+    $template                            => 'template',
+    $update_dns_on_lease_renewal         => 'update_dns_on_lease_renewal',
+    $use_authority                       => 'use_authority',
+    $use_bootfile                        => 'use_bootfile',
+    $use_bootserver                      => 'use_bootserver',
+    $use_ddns_domainname                 => 'use_ddns_domainname',
+    $use_ddns_generate_hostname          => 'use_ddns_generate_hostname',
+    $use_ddns_ttl                        => 'use_ddns_ttl',
+    $use_ddns_update_fixed_addresses     => 'use_ddns_update_fixed_addresses',
+    $use_ddns_use_option81               => 'use_ddns_use_option81',
+    $use_deny_bootp                      => 'use_deny_bootp',
+    $use_email_list                      => 'use_email_list',
+    $use_enable_ddns                     => 'use_enable_ddns',
+    $use_enable_dhcp_thresholds          => 'use_enable_dhcp_thresholds',
+    $use_enable_ifmap_publishing         => 'use_enable_ifmap_publishing',
+    $use_ignore_dhcp_option_list_request => 'use_ignore_dhcp_option_list_request',
+    $use_lease_scavenge_time             => 'use_lease_scavenge_time',
+    $use_nextserver                      => 'use_nextserver',
+    $use_options                         => 'use_options',
+    $use_recycle_leases                  => 'use_recycle_leases',
+    $use_update_dns_on_lease_renewal     => 'use_update_dns_on_lease_renewal',
+    $use_zone_associations               => 'use_zone_associations',
+    $zone_associations                   => 'zone_associations',
+);
+
+sub OBJECT_NAME {
+    return $IB_NETWORK;
+}
+
+# -----------------------------------------
+# Optional point to a JSON object from a get for a network object
+# -----------------------------------------
+sub new {
     my ( $class, $parm_ref ) = @_;
     my $self;
-    $self = $class->SUPER::new( \%parms );
 
-    $self->{$authority}                           = undef;
-    $self->{$auto_create_reversezone}             = undef;
-    $self->{$bootfile}                            = undef;
-    $self->{$bootserver}                          = undef;
-    $self->{$comment}                             = undef;
-    $self->{$ddns_domainname}                     = undef;
-    $self->{$ddns_generate_hostname}              = undef;
-    $self->{$ddns_server_always_updates}          = undef;
-    $self->{$ddns_ttl}                            = undef;
-    $self->{$ddns_update_fixed_addresses}         = undef;
-    $self->{$ddns_use_option81}                   = undef;
-    $self->{$deny_bootp}                          = undef;
-    $self->{$disable}                             = undef;
-    $self->{$email_list}                          = undef;
-    $self->{$enable_ddns}                         = undef;
-    $self->{$enable_dhcp_thresholds}              = undef;
-    $self->{$enable_email_warnings}               = undef;
-    $self->{$enable_ifmap_publishing}             = undef;
-    $self->{$enable_snmp_warnings}                = undef;
-    $self->{$extattrs}                            = undef;
-    $self->{$high_water_mark}                     = undef;
-    $self->{$high_water_mark_reset}               = undef;
-    $self->{$ignore_dhcp_option_list_request}     = undef;
-    $self->{$ipv4addr}                            = undef;
-    $self->{$lease_scavenge_time}                 = undef;
-    $self->{$low_water_mark}                      = undef;
-    $self->{$low_water_mark_reset}                = undef;
-    $self->{$members}                             = undef;
-    $self->{$netmask}                             = undef;
-    $self->{$network}                             = undef;
-    $self->{$network_container}                   = undef;
-    $self->{$network_view}                        = undef;
-    $self->{$nextserver}                          = undef;
-    $self->{$options}                             = undef;
-    $self->{$pxe_lease_time}                      = undef;
-    $self->{$recycle_leases}                      = undef;
-    $self->{$template}                            = undef;
-    $self->{$update_dns_on_lease_renewal}         = undef;
-    $self->{$use_authority}                       = undef;
-    $self->{$use_bootfile}                        = undef;
-    $self->{$use_bootserver}                      = undef;
-    $self->{$use_ddns_domainname}                 = undef;
-    $self->{$use_ddns_generate_hostname}          = undef;
-    $self->{$use_ddns_ttl}                        = undef;
-    $self->{$use_ddns_update_fixed_addresses}     = undef;
-    $self->{$use_ddns_use_option81}               = undef;
-    $self->{$use_deny_bootp}                      = undef;
-    $self->{$use_email_list}                      = undef;
-    $self->{$use_enable_ddns}                     = undef;
-    $self->{$use_enable_dhcp_thresholds}          = undef;
-    $self->{$use_enable_ifmap_publishing}         = undef;
-    $self->{$use_ignore_dhcp_option_list_request} = undef;
-    $self->{$use_lease_scavenge_time}             = undef;
-    $self->{$use_nextserver}                      = undef;
-    $self->{$use_options}                         = undef;
-    $self->{$use_recycle_leases}                  = undef;
-    $self->{$use_update_dns_on_lease_renewal}     = undef;
-    $self->{$use_zone_associations}               = undef;
-    $self->{$zone_associations}                   = undef;
+    print "new() $class\n";
 
-    EventLog( EVENT_DEBUG, MYNAME . "() started" );
+    # $self = $class->SUPER::new();
+    $self = NAC::IBWAPI->new();
+
+    if( ref($self) ne 'NAC::IBWAPI' ) { confess; }
 
     bless $self, $class;
 
-    $self;
+    # print "REF $class new(): " . ref($self) . "\n";
 
+    $self->{$IB_OBJECT}             = $IB_NETWORK;
+    $self->{$_OBJECT_RETURN_FIELDS} = \%return_fields;
+
+    return $self;
+}
+
+# -----------------------------------------
+sub GET {
+    my ( $class, $parm_ref ) = @_;
+
+    print "GET() $class\n";
+
+    my $self = $class->new();
+
+    print "GOT() $class DUMP:\n";
+    print "REF $class new(): " . ref($self) . "\n";
+
+    $self->{$_IB_PARM_REF} = \%parm_ref;
+
+    $self->_get();
 }
 
 sub authority                           { not_impl; }

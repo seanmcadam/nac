@@ -385,8 +385,7 @@ sub handle_request {
                 $locid = $p->{$LOCID} = $parm{$DB_COL_SW_LOCID};
                 $p->{$SWITCHNAME} = $parm{$DB_COL_SW_NAME};
 
-
-        	$self->dbw->update_lastseen_switchid($switchid);
+                $self->dbw->update_lastseen_switchid($switchid);
 
             }
             else {
@@ -398,7 +397,6 @@ sub handle_request {
         else {
             EventLog( EVENT_WARN, "NO Switch IP: MAC:$mac PORT:$portname" );
         }
-
 
         #
         # No port or MAC, This is a test query, Return Accept
@@ -428,11 +426,8 @@ sub handle_request {
         }
 
         #
-<<<<<<< HEAD:lib/NAC/Radius/AuthNAC2.pm
         #
-=======
         # MAC addresses can come in as a USERNAME (3850 accounting packets)
->>>>>>> 9b41989d2d3a0a588c7c806279674356f0f9bcf9:lib/Radius/AuthNAC2.pm
         #
         if ( ( $mac eq '' ) && ( $username =~ /[0-9a-f]{12}/ ) ) {
             my @m = split( '', $username );

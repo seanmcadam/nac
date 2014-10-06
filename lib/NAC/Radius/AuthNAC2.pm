@@ -54,6 +54,7 @@ Readonly our $LOCID              => 'LOCID';
 Readonly our $MAC                => 'MAC';
 Readonly our $MACID              => 'MACID';
 Readonly our $MAC_COE            => 'MAC-COE';
+Readonly our $MAC_THINCLIENT     => 'MAC-THINCLIENT';
 Readonly our $PORTNAME           => 'PORTNAME';
 Readonly our $SITE               => 'SITE';
 Readonly our $SWITCHID           => 'SWITCHID';
@@ -388,7 +389,7 @@ sub handle_request {
 
             }
             else {
-                EventLog( EVENT_DEBUG, "UNKNOWN Switch IP: $switchip MAC:$mac PORT:$portname" );
+                EventLog( EVENT_WARN, "UNKNOWN Switch IP: $switchip MAC:$mac PORT:$portname" );
                 $ret = ($main::REJECT);
                 goto EXITFUNCTION;
             }
@@ -436,10 +437,44 @@ sub handle_request {
         }
 
         #
+        #
+        #
+        if ( ( $mac eq '' ) && ( $username =~ /[0-9a-f]{12}/ ) ) {
+            my @m = split( '', $username );
+            $mac = $m[0] . $m[1] . ':'
+              . $m[2] . $m[3] . ':'
+              . $m[4] . $m[5] . ':'
+              . $m[6] . $m[7] . ':'
+              . $m[8] . $m[9] . ':'
+              . $m[10] . $m[11]
+              ;
+
+            EventLog( EVENT_WARN, "MAC SUBSTITUTE IP:$switchip MAC:$mac <- USERNAME:$username " );
+        }
+
+        #
         # No MAC, this is a problem, return REJECT
         #
         if ( $mac eq '' ) {
             EventLog( EVENT_WARN, "No MAC: IP:$switchip PORTNAME:$portname USERNAME:$username MAC empty" );
+            $ret = ($main::ACCEPT);
+            goto EXITFUNCTION;
+        }
+
+        #
+        # Zero MAC
+        #
+        if ( $mac eq '00:00:00:00:00:00' ) {
+            EventLog( EVENT_WARN, "MAC:$mac IP:$switchip PORTNAME:$portname USERNAME:$username MAC All Zeros" );
+            $ret = ($main::ACCEPT);
+            goto EXITFUNCTION;
+        }
+
+        #
+        # Braodcast MAC
+        #
+        if ( $mac eq 'ff:ff:ff:ff:ff:ff' ) {
+            EventLog( EVENT_WARN, "MAC:$mac IP:$switchip PORTNAME:$portname USERNAME:$username Broadcast MAC" );
             $ret = ($main::ACCEPT);
             goto EXITFUNCTION;
         }
@@ -466,7 +501,8 @@ sub handle_request {
         }
         else {
             $macid = $p->{$MACID} = $parm{$DB_COL_MAC_ID};
-            $p->{$MAC_COE} = $parm{$DB_COL_MAC_COE};
+            $p->{$MAC_COE}        = $parm{$DB_COL_MAC_COE};
+            $p->{$MAC_THINCLIENT} = $parm{$DB_COL_MAC_THINCLIENT};
             EventLog( EVENT_DEBUG, "GOT MACID: " . $p->{$MACID} );
         }
 
@@ -780,6 +816,7 @@ sub access_request() {
     my $site                = $p->{$SITE};
     my $bldg                = $p->{$BLDG};
     my $mac_coe             = ( defined $p->{$MAC_COE} && $p->{$MAC_COE} ) ? 1 : 0;
+    my $mac_thinclient      = ( defined $p->{$MAC_THINCLIENT} && $p->{$MAC_THINCLIENT} ) ? 1 : 0;
     my $mac_coe_ticketref   = 0;
     my $vlanname            = 'unknown';
     my $vlantype            = 'unknown';
@@ -927,21 +964,56 @@ sub access_request() {
 
             EventLog( EVENT_INFO, " ->CHECKING $event_hdr" );
 
-            #------------------------------------------------------------------
-            # FUTURE FUTURE FUTURE is HERE
+            #------------------------------------------------------------------------------
+            # Block non-COE and non-THINCLIENT MACs from getting on COE VLANs Here
+            #------------------------------------------------------------------------------
             #
-            # Block non-COE MACs from getting on COE VLANs Here
-            #------------------------------------------------------------------
+            # If Vlan is COE, check the MAC settings
             #
-            #	if( $l_vlan_coe && ! $mac_coe ) {
-            #       my %p = ();
-            #       $p{$DB_COL_DME_MACID} = $macid;
-            #       if( !$mysql->get_coe_mac_exception(\%p)) {
-            #		next;
-            #	    }
-            #       $mac_coe_ticketref = $p{$DB_COL_DME_TICKETREF};
-            #	}
-            #
+
+            if ($l_vlan_coe) {
+                EventLog( EVENT_DEBUG, "COE VLAN CHECK VLAN:$l_vlanname SW:$switchname PORT:$portname" );
+
+                #
+                # Check If Mac is COE or THINCLIENT
+                #
+                if ( $mac_coe || $mac_thinclient ) {
+                    EventLog( EVENT_DEBUG, "COE MAC FOUND:$l_vlanname SW:$switchname PORT:$portname" );
+                    goto ALLOWTHISVLAN;
+                }
+
+                #
+                # Check If Mac is in the Exception Table
+                #
+                my %p = ();
+                $p{$DB_COL_DME_MACID} = $macid;
+                if ( $DBHR->get_doecoe_mac_exception( \%p ) ) {
+                    EventLog( EVENT_INFO, "COE EXCEPTION FOUND for NON-COE MAC:$mac VLAN:$l_vlanname SW:$switchname PORT:$portname" );
+                    goto ALLOWTHISVLAN;
+                }
+
+                #
+                # Check for COE MAGIC PORTING
+                #
+                if ( $l_classname eq $CLASS_NAME_COE ) {
+
+                    # Check for CLASS = 'COE', and Magic port entry
+                    my %q = ();
+                    $q{$DB_COL_MAGIC_SWPID}   = $switchportid;
+                    $q{$DB_COL_MAGIC_CLASSID} = $l_classid;
+
+                    if ( $DBHR->get_magicport( \%q ) ) {
+                        EventLog( EVENT_INFO, "COE ALLOW MAGICPORTING NON-COE MAC:$mac VLAN:$l_vlanname SW:$switchname PORT:$portname" );
+                        goto ALLOWTHISVLAN;
+                    }
+                }
+
+                EventLog( EVENT_WARN, "SKIPPING NON-COE MAC:$mac VLAN:$l_vlanname SW:$switchname PORT:$portname" );
+                next;
+
+              ALLOWTHISVLAN:
+
+            }
 
             # Track for later, if no locations match then there is an error
             if ( $l_classname eq $CLASS_NAME_BLOCK ) {

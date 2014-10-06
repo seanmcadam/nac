@@ -11,7 +11,7 @@
 #
 #
 # Purpose: Script to list out templates in the system.
-#
+#	Used as an example script
 #
 #
 

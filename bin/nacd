@@ -10,10 +10,10 @@ use NAC::Constants;
 use NAC::DBBufSync;
 use strict;
 
-# NAC::Syslog::DeactivateDebug();
-NAC::Syslog::ActivateDebug();
+NAC::Syslog::DeactivateDebug();
+# NAC::Syslog::ActivateDebug();
 NAC::Syslog::DeactivateStdout();
-NAC::Syslog::ActivateStdout();
+# NAC::Syslog::ActivateStdout();
 
 my $bufsync;
 
@@ -27,8 +27,9 @@ if( ! ($bufsync->BUF) ) {
 	exit;
 	}
 
+$bufsync->server_setup();
 become_daemon();
-
 $bufsync->server_buf_loop();
+
 EventLog( EVENT_INFO, "$0 Exiting" );
 

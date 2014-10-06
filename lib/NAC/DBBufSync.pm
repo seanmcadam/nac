@@ -30,7 +30,7 @@ Readonly our $USE_SNMP => 0;
 
 BEGIN {
     use FindBin;
-    use lib "$FindBin::Bin/../lib";
+    use lib "$FindBin::Bin/..";
     if ($USE_SNMP) {
         use NAC::SNMP;
     }
@@ -87,7 +87,7 @@ sub new() {
 
     if ( ( defined $parm_ref ) && ( ref($parm_ref) ne 'HASH' ) ) { confess; }
 
-    EventLog( EVENT_START, MYNAME . "() starting" );
+    EventLog( EVENT_DEBUG, MYNAME . "() starting" );
 
     my %macls;
     my %switchls;
@@ -161,7 +161,7 @@ sub connect_db {
         $NACRADIUSAUDIT => 'NAC::DBRadiusAudit',
     );
 
-    EventLog( EVENT_START, MYNAME . "DB: $db" );
+    EventLog( EVENT_DEBUG, MYNAME . "DB: $db" );
 
     if ( !defined $db_package{$db} ) { confess Dumper @_; }
 
@@ -240,10 +240,9 @@ sub RA {
 #-------------------------------------------------------
 sub SNMP {
     if ( !$USE_SNMP ) { return undef; }
+    my ( $self, $hostname ) = @_;
 
     EventLog( EVENT_DEBUG, MYNAMELINE . " Called" );
-
-    my ( $self, $hostname ) = @_;
 
     if ( !defined $hostname ) { confess; }
     if ( !$self->{$SNMPOK} )  { confess; }
@@ -265,6 +264,14 @@ sub SNMP {
     }
 
     return $self->{$SNMPCONN};
+}
+
+#-------------------------------------------------------
+#
+#-------------------------------------------------------
+sub server_setup {
+    my ($self) = @_;
+    $self->BUF->setup_udp_server;
 }
 
 #-------------------------------------------------------
@@ -781,8 +788,6 @@ sub sync_switchportstate_id {
     my $ref;
     my $ret = 0;
 
-    EventLog( EVENT_INFO, MYNAMELINE . " Called ID: $id" );
-
     if ( !$self->MAINDB->sql_connected ) {
         EventLog( EVENT_WARN, MYNAMELINE . " NOT CONNECTED to DB" );
         return 0;
@@ -870,14 +875,13 @@ sub sync_lastseen_host {
     my ($self) = @_;
     my $count = 0;
 
-    EventLog( EVENT_INFO, MYNAMELINE . " Called " );
-
     if ( $self->STATUS && ( $self->STATUS->sql_connected || $self->STATUS->reconnect ) ) {
         if ( ( !defined $self->{$HOST_LS_SEND_TIME} ) || ( $self->{$HOST_LS_SEND_TIME} < ( time - $MIN_SEND_TIME ) ) ) {
             if ( !$self->STATUS->update_host_lastseen() ) {
                 EventLog( EVENT_WARN, MYNAMELINE . " Failed to UPDATE HOST " );
             }
             else {
+    		EventLog( EVENT_INFO, MYNAMELINE . " Run " );
                 $self->{$HOST_LS_SEND_TIME} = time;
             }
         }
@@ -896,13 +900,12 @@ sub sync_slave {
     my ( $self, $state ) = @_;
     my $count = 0;
 
-    EventLog( EVENT_DEBUG, MYNAMELINE . " Called " );
-
     if ( $self->STATUS && ( $self->STATUS->sql_connected || $self->STATUS->reconnect ) ) {
         if ( !$self->STATUS->update_slave_status($state) ) {
             EventLog( EVENT_WARN, MYNAMELINE . " Failed SLAVE Checkin " );
         }
         else {
+    	    EventLog( EVENT_DEBUG, MYNAMELINE . " Run " );
             $self->{$HOST_LS_SLAVE_CHECKIN} = time;
         }
     }
@@ -920,8 +923,6 @@ sub sync_slave {
 sub sync_lastseen_location_all {
     my ($self) = @_;
     my $count = 0;
-
-    EventLog( EVENT_INFO, MYNAMELINE . " Called " );
 
     if ( $self->STATUS && ( $self->STATUS->sql_connected || $self->STATUS->reconnect ) ) {
         while ( my $ref = $self->BUF->get_next_lastseen_location( $count++, 1 ) ) {
@@ -953,8 +954,6 @@ sub sync_lastseen_location_id {
     my $count = 0;
     my $ret   = 0;
 
-    EventLog( EVENT_DEBUG, MYNAMELINE . " Called: $id " );
-
     my $lastsend = $self->{$LOCATION_LS_SEND_TIME}->{$id};
 
     if ( ( ( !defined $lastsend ) || ( $lastsend < ( time - $MIN_SEND_TIME ) ) ) ) {
@@ -970,12 +969,13 @@ sub sync_lastseen_location_id {
                             EventLog( EVENT_ERR, MYNAMELINE . " UPDATE LOCATION LASTSEEN FAILED for LOCID:$locid and TIME:$lastseen " );
                         }
                         else {
+    			    EventLog( EVENT_DEBUG, MYNAMELINE . " Run: $locid " );
                             $ret++;
                         }
                     }
                     else {
                         $ret++;
-                        EventLog( EVENT_INFO, MYNAMELINE . " SKIP UPDATE " );
+                        EventLog( EVENT_DEBUG, MYNAMELINE . " SKIP UPDATE " );
                     }
                 }
                 else {
@@ -1008,7 +1008,7 @@ sub sync_lastseen_location_id {
             }
         }
         else {
-            EventLog( EVENT_INFO, MYNAMELINE . " STATUS not connected" );
+            EventLog( EVENT_WARN, MYNAMELINE . " STATUS not connected" );
         }
     }
     else {
@@ -1458,7 +1458,7 @@ sub add_lastseen_switchport_id {
                         EventLog( EVENT_WARN, MYNAMELINE . " CAN'T Update IfIndex $portname, for $switchip, $switchname" );
                     }
 
-                    my $enabled = $self->SNMP()->get_mac_auth_enabled_index($idx);
+                    my $enabled = $self->SNMP->get_mac_auth_enabled_index($idx);
 
                     if ( !( $self->STATUS->update_switchport_ifindex( $id, $idx ) ) ) {
                         EventLog( EVENT_WARN, MYNAMELINE . " CAN'T Update IfIndex $portname, for $switchip, $switchname" );
@@ -1470,9 +1470,9 @@ sub add_lastseen_switchport_id {
                         }
 
                         if ($enabled) {
-                            my $method    = $self->SNMP()->get_mac_auth_method_index($idx);
-                            my $state_ref = $self->SNMP()->get_mac_auth_state_index_ref($idx);
-                            my $auth_ref  = $self->SNMP()->get_mac_auth_auth_index_ref($idx);
+                            my $method    = $self->SNMP->get_mac_auth_method_index($idx);
+                            my $state_ref = $self->SNMP->get_mac_auth_state_index_ref($idx);
+                            my $auth_ref  = $self->SNMP->get_mac_auth_auth_index_ref($idx);
                             my $state     = undef;
                             my $auth      = undef;
 

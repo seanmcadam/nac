@@ -18,7 +18,7 @@
 
 package NAC::DB2;
 use FindBin;
-use lib "$FindBin::Bin/../lib";
+use lib "$FindBin::Bin/..";
 use version;
 our $VERSION = "3.0";
 my ($minor_version) = '$Revision: 1751 $:' =~ m{ \$Revision:\s+(\S+) }x;
@@ -143,13 +143,13 @@ sub new() {
 
     if ( ( defined $parm_ref ) && ( ref($parm_ref) ne 'HASH' ) ) { confess; }
 
-    EventLog( EVENT_START, MYNAME . "() started" );
+    EventLog( EVENT_DEBUG, MYNAME . "() started" );
 
     my %parms  = ();
     my $config = NAC::ConfigDB->new();
 
     # For backward compatibility
-    $parms{$SQL_DB}        = ( defined $parm_ref->{$SQL_DB} )        ? $parm_ref->{$SQL_DB}        : $config->nac_master_write_db;
+    $parms{$SQL_DB}        = ( defined $parm_ref->{$SQL_DB} )        ? $parm_ref->{$SQL_DB}        : $config->nac_master_write_db_audit;
     $parms{$SQL_HOST}      = ( defined $parm_ref->{$SQL_HOST} )      ? $parm_ref->{$SQL_HOST}      : $config->nac_master_write_hostname;
     $parms{$SQL_PORT}      = ( defined $parm_ref->{$SQL_PORT} )      ? $parm_ref->{$SQL_PORT}      : $config->nac_master_write_port;
     $parms{$SQL_USER}      = ( defined $parm_ref->{$SQL_USER} )      ? $parm_ref->{$SQL_USER}      : $config->nac_master_write_user;
@@ -1468,8 +1468,8 @@ sub add_switchportstate($$) {
     if ( !defined $parm_ref ) { confess; }
     if ( ref($parm_ref) ne 'HASH' ) { confess; }
     if ( !defined $parm_ref->{$DB_COL_SWPS_SWPID} || ( !( isdigit( $parm_ref->{$DB_COL_SWPS_SWPID} ) ) ) ) { confess Dumper $parm_ref; }
-    if ( defined $parm_ref->{$DB_COL_SWPS_MACID} && ( !( abs( isdigit( $parm_ref->{$DB_COL_SWPS_MACID} ) ) ) ) ) { confess Dumper $parm_ref; }
-###    #if ( defined $parm_ref->{$DB_COL_SWPS_VMACID} && ( !( abs( isdigit( $parm_ref->{$DB_COL_SWPS_VMACID} ) ) ) ) ) { confess Dumper $parm_ref; }
+    if ( defined $parm_ref->{$DB_COL_SWPS_MACID} && ( !( isdigit( abs( $parm_ref->{$DB_COL_SWPS_MACID} ) ) ) ) ) { confess Dumper $parm_ref; }
+    if ( defined $parm_ref->{$DB_COL_SWPS_VMACID} && ( !( isdigit( abs( $parm_ref->{$DB_COL_SWPS_VMACID} ) ) ) ) ) { confess Dumper $parm_ref; }
 
     if ( defined $parm_ref->{$DB_COL_SWPS_LASTUPDATE} ) {
         EventLog( EVENT_WARN, MYNAMELINE() . " ignoring LASTUPDATE " );
@@ -2916,7 +2916,7 @@ sub get_class_mac_port($$) {
           . ' vlan.vlan               AS vlan, '
           . ' vlan.vlanid             AS vlanid, '
           . ' vlan.vlanname           AS vlanname, '
-          . ' vlan.coe             AS coe, '
+          . ' vlan.coe                AS coe, '
           . " 'PORT-VLAN'             AS authtype, "
           . ' port2class.port2classid AS recordid, '
           . ' class.classid           AS classid, '
@@ -2954,7 +2954,7 @@ sub get_class_mac_port($$) {
           . ' vlan.vlan                       AS vlan, '
           . ' vlan.vlanid                     AS vlanid, '
           . ' vlan.vlanname                   AS vlanname, '
-          . ' vlan.coe                     AS coe, '
+          . ' vlan.coe                        AS coe, '
           . " 'PORT-VLANGROUP'                AS authtype, "
           . ' port2class.port2classid         AS recordid, '
           . ' class.classid                   AS classid, '
@@ -2994,7 +2994,7 @@ sub get_class_mac_port($$) {
           . ' vlan.vlan                       AS vlan, '
           . ' vlan.vlanid                     AS vlanid, '
           . ' vlan.vlanname                   AS vlanname, '
-          . ' vlan.coe                     AS coe, '
+          . ' vlan.coe                        AS coe, '
           . " 'PORT-DEFVLANGROUP'             AS authtype, "
           . ' port2class.port2classid         AS recordid, '
           . ' class.classid                   AS classid, '
@@ -3034,7 +3034,7 @@ sub get_class_mac_port($$) {
           . ' vlan.vlan                  AS vlan, '
           . ' vlan.vlanid                AS vlanid, '
           . ' vlan.vlanname              AS vlanname, '
-          . ' vlan.coe                AS coe, '
+          . ' vlan.coe                   AS coe, '
           . " 'MAC-VLAN'                 AS authtype, "
           . ' mac2class.mac2classid      AS recordid, '
           . ' class.classid              AS classid, '
@@ -3072,7 +3072,7 @@ sub get_class_mac_port($$) {
           . ' vlan.vlan                       AS vlan, '
           . ' vlan.vlanid                     AS vlanid, '
           . ' vlan.vlanname                   AS vlanname, '
-          . ' vlan.coe                     AS coe, '
+          . ' vlan.coe                        AS coe, '
           . " 'MAC-VLANGROUP'                 AS authtype, "
           . ' mac2class.mac2classid           AS recordid, '
           . ' class.classid                   AS classid, '
@@ -3114,7 +3114,7 @@ sub get_class_mac_port($$) {
           . ' vlan.vlan                       AS vlan, '
           . ' vlan.vlanid                     AS vlanid, '
           . ' vlan.vlanname                   AS vlanname, '
-          . ' vlan.coe                     AS coe, '
+          . ' vlan.coe                        AS coe, '
           . " 'MAC-TEMPLATE'                  AS authtype, "
           . ' mac2class.mac2classid           AS recordid, '
           . ' class.classid                   AS classid, '
@@ -3156,7 +3156,7 @@ sub get_class_mac_port($$) {
           . ' vlan.vlan                       AS vlan, '
           . ' vlan.vlanid                     AS vlanid, '
           . ' vlan.vlanname                   AS vlanname, '
-          . ' vlan.coe                     AS coe, '
+          . ' vlan.coe                        AS coe, '
           . " 'MAC-DEFVLANGROUP'              AS authtype, "
           . ' mac2class.mac2classid           AS recordid, '
           . ' class.classid                   AS classid, '
@@ -3526,13 +3526,14 @@ sub get_location($$) {
             if ( defined $hash_ref ) {
                 while ( my @answer = $self->sth->fetchrow_array() ) {
                     my %h;
+                    my $col = 0;
                     $hash_ref->{ $answer[0] } = \%h;
-                    $h{$DB_COL_LOC_ID}        = $answer[0];
-                    $h{$DB_COL_LOC_SITE}      = $answer[1];
-                    $h{$DB_COL_LOC_BLDG}      = $answer[2];
-                    $h{$DB_COL_LOC_NAME}      = $answer[3];
-                    $h{$DB_COL_LOC_DESC}      = $answer[4];
-                    $h{$DB_COL_LOC_ACT}       = $answer[5];
+                    $h{$DB_COL_LOC_ID}        = $answer[ $col++ ];
+                    $h{$DB_COL_LOC_SITE}      = $answer[ $col++ ];
+                    $h{$DB_COL_LOC_BLDG}      = $answer[ $col++ ];
+                    $h{$DB_COL_LOC_NAME}      = $answer[ $col++ ];
+                    $h{$DB_COL_LOC_DESC}      = $answer[ $col++ ];
+                    $h{$DB_COL_LOC_ACT}       = $answer[ $col++ ];
 
                     # $h{$DB_COL_LOC_SHORTNAME} = $answer[1] . '-' . $answer[2];
                     $h{$DB_COL_LOC_SHORTNAME} = $answer[1] . '_' . $answer[2];
@@ -3541,12 +3542,13 @@ sub get_location($$) {
             }
             else {
                 if ( my @answer = $self->sth->fetchrow_array() ) {
-                    $parm_ref->{$DB_COL_LOC_ID}   = $answer[0];
-                    $parm_ref->{$DB_COL_LOC_SITE} = $answer[1];
-                    $parm_ref->{$DB_COL_LOC_BLDG} = $answer[2];
-                    $parm_ref->{$DB_COL_LOC_NAME} = $answer[3];
-                    $parm_ref->{$DB_COL_LOC_DESC} = $answer[4];
-                    $parm_ref->{$DB_COL_LOC_ACT}  = $answer[5];
+                    my $col = 0;
+                    $parm_ref->{$DB_COL_LOC_ID}   = $answer[ $col++ ];
+                    $parm_ref->{$DB_COL_LOC_SITE} = $answer[ $col++ ];
+                    $parm_ref->{$DB_COL_LOC_BLDG} = $answer[ $col++ ];
+                    $parm_ref->{$DB_COL_LOC_NAME} = $answer[ $col++ ];
+                    $parm_ref->{$DB_COL_LOC_DESC} = $answer[ $col++ ];
+                    $parm_ref->{$DB_COL_LOC_ACT}  = $answer[ $col++ ];
 
                     # $parm_ref->{$DB_COL_LOC_SHORTNAME} = $answer[1] . '-' . $answer[2];
                     $parm_ref->{$DB_COL_LOC_SHORTNAME} = $answer[1] . '_' . $answer[2];
@@ -3622,16 +3624,18 @@ sub get_loopcidr2loc($$) {
         while ( my @answer = $self->sth->fetchrow_array() ) {
             if ( defined $hash_ref ) {
                 my %h;
+                my $col = 0;
                 $hash_ref->{ $answer[0] } = \%h;
-                $h{$DB_COL_LOOP_ID}       = $answer[0];
-                $h{$DB_COL_LOOP_CIDR}     = $answer[1];
-                $h{$DB_COL_LOOP_LOCID}    = $answer[2];
+                $h{$DB_COL_LOOP_ID}       = $answer[ $col++ ];
+                $h{$DB_COL_LOOP_CIDR}     = $answer[ $col++ ];
+                $h{$DB_COL_LOOP_LOCID}    = $answer[ $col++ ];
                 $ret++;
             }
             else {
-                $parm_ref->{$DB_COL_LOOP_ID}    = $answer[0];
-                $parm_ref->{$DB_COL_LOOP_CIDR}  = $answer[1];
-                $parm_ref->{$DB_COL_LOOP_LOCID} = $answer[2];
+                my $col = 0;
+                $parm_ref->{$DB_COL_LOOP_ID}    = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_LOOP_CIDR}  = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_LOOP_LOCID} = $answer[ $col++ ];
                 $ret++;
             }
         }
@@ -3662,7 +3666,7 @@ sub get_coe_mac_exception($$) {
     my $ticketref = $parm_ref->{$DB_COL_DME_TICKETREF};
     my $where     = 0;
 
-    my $sql = "SELECT macid,ticketref,created,comment FROM coe_mac_exception "
+    my $sql = "SELECT macid,ticketref,created,comment FROM $DB_TABLE_COE_MAC_EXCEPTION "
       . ( ( defined $id ) ? ( ( !$where++ ) ? 'WHERE' : 'AND' ) . " macid = $id " : '' )
       . ( ( defined $ticketref ) ? ( ( !$where++ ) ? 'WHERE' : 'AND' ) . " ticketref = '$ticketref' " : '' )
       ;
@@ -4038,26 +4042,28 @@ sub get_port2class($$) {
         if ( defined $hash_ref ) {
             while ( my @answer = $self->sth->fetchrow_array() ) {
                 my %h;
+                my $col = 0;
                 $hash_ref->{ $answer[0] } = \%h;
-                $h{$DB_COL_P2C_ID}        = $answer[0];
-                $h{$DB_COL_P2C_SWPID}     = $answer[1];
-                $h{$DB_COL_P2C_CLASSID}   = $answer[2];
-                $h{$DB_COL_P2C_VLANID}    = $answer[3];
-                $h{$DB_COL_P2C_VGID}      = $answer[4];
-                $h{$DB_COL_P2C_LOCKED}    = $answer[5];
-                $h{$DB_COL_P2C_COM}       = $answer[6];
+                $h{$DB_COL_P2C_ID}        = $answer[ $col++ ];
+                $h{$DB_COL_P2C_SWPID}     = $answer[ $col++ ];
+                $h{$DB_COL_P2C_CLASSID}   = $answer[ $col++ ];
+                $h{$DB_COL_P2C_VLANID}    = $answer[ $col++ ];
+                $h{$DB_COL_P2C_VGID}      = $answer[ $col++ ];
+                $h{$DB_COL_P2C_LOCKED}    = $answer[ $col++ ];
+                $h{$DB_COL_P2C_COM}       = $answer[ $col++ ];
                 $ret++;
             }
         }
         else {
             if ( my @answer = $self->sth->fetchrow_array() ) {
-                $parm_ref->{$DB_COL_P2C_ID}      = $answer[0];
-                $parm_ref->{$DB_COL_P2C_SWPID}   = $answer[1];
-                $parm_ref->{$DB_COL_P2C_CLASSID} = $answer[2];
-                $parm_ref->{$DB_COL_P2C_VLANID}  = $answer[3];
-                $parm_ref->{$DB_COL_P2C_VGID}    = $answer[4];
-                $parm_ref->{$DB_COL_P2C_LOCKED}  = $answer[5];
-                $parm_ref->{$DB_COL_P2C_COM}     = $answer[6];
+                my $col = 0;
+                $parm_ref->{$DB_COL_P2C_ID}      = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_P2C_SWPID}   = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_P2C_CLASSID} = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_P2C_VLANID}  = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_P2C_VGID}    = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_P2C_LOCKED}  = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_P2C_COM}     = $answer[ $col++ ];
                 $ret++;
             }
         }
@@ -4201,18 +4207,20 @@ sub get_switch2vlan($$) {
         if ( defined $hash_ref ) {
             while ( my @answer = $self->sth->fetchrow_array() ) {
                 my %s;
+                my $col = 0;
                 $hash_ref->{ $answer[0] } = \%s;
-                $s{$DB_COL_SW2V_ID}       = $answer[0];
-                $s{$DB_COL_SW2V_SWID}     = $answer[1];
-                $s{$DB_COL_SW2V_VLANID}   = $answer[2];
+                $s{$DB_COL_SW2V_ID}       = $answer[ $col++ ];
+                $s{$DB_COL_SW2V_SWID}     = $answer[ $col++ ];
+                $s{$DB_COL_SW2V_VLANID}   = $answer[ $col++ ];
                 $ret++;
             }
         }
         else {
             if ( my @answer = $self->sth->fetchrow_array() ) {
-                $parm_ref->{$DB_COL_SW2V_ID}     = $answer[0];
-                $parm_ref->{$DB_COL_SW2V_SWID}   = $answer[1];
-                $parm_ref->{$DB_COL_SW2V_VLANID} = $answer[2];
+                my $col = 0;
+                $parm_ref->{$DB_COL_SW2V_ID}     = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_SW2V_SWID}   = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_SW2V_VLANID} = $answer[ $col++ ];
                 $ret++;
             }
         }
@@ -4496,20 +4504,22 @@ sub get_switchport($$) {
         if ( defined $hash_ref ) {
             while ( my @row = $self->sth->fetchrow_array() ) {
                 my %s;
+                my $col = 0;
                 $hash_ref->{ $row[0] } = \%s;
-                $s{$DB_COL_SWP_ID}     = $row[0];
-                $s{$DB_COL_SWP_NAME}   = $row[1];
-                $s{$DB_COL_SWP_DESC}   = $row[2];
-                $s{$DB_COL_SWP_SWID}   = $row[3];
+                $s{$DB_COL_SWP_ID}     = $row[ $col++ ];
+                $s{$DB_COL_SWP_NAME}   = $row[ $col++ ];
+                $s{$DB_COL_SWP_DESC}   = $row[ $col++ ];
+                $s{$DB_COL_SWP_SWID}   = $row[ $col++ ];
                 $ret++;
             }
         }
         else {
             if ( my @row = $self->sth->fetchrow_array() ) {
-                $parm_ref->{$DB_COL_SWP_ID}   = $row[0];
-                $parm_ref->{$DB_COL_SWP_NAME} = $row[1];
-                $parm_ref->{$DB_COL_SWP_DESC} = $row[2];
-                $parm_ref->{$DB_COL_SWP_SWID} = $row[3];
+                my $col = 0;
+                $parm_ref->{$DB_COL_SWP_ID}   = $row[ $col++ ];
+                $parm_ref->{$DB_COL_SWP_NAME} = $row[ $col++ ];
+                $parm_ref->{$DB_COL_SWP_DESC} = $row[ $col++ ];
+                $parm_ref->{$DB_COL_SWP_SWID} = $row[ $col++ ];
                 $ret++;
             }
         }
@@ -4739,22 +4749,24 @@ sub get_vlangroup($$) {
         if ( defined $hash_ref ) {
             while ( my @answer = $self->sth->fetchrow_array() ) {
                 my %h;
+                my $col = 0;
                 $hash_ref->{ $answer[0] } = \%h;
-                $h{$DB_COL_VG_ID}         = $answer[0];
-                $h{$DB_COL_VG_NAME}       = $answer[1];
-                $h{$DB_COL_VG_DESC}       = $answer[2];
-                $h{$DB_COL_VG_ACT}        = $answer[3];
-                $h{$DB_COL_VG_COM}        = $answer[4];
+                $h{$DB_COL_VG_ID}         = $answer[ $col++ ];
+                $h{$DB_COL_VG_NAME}       = $answer[ $col++ ];
+                $h{$DB_COL_VG_DESC}       = $answer[ $col++ ];
+                $h{$DB_COL_VG_ACT}        = $answer[ $col++ ];
+                $h{$DB_COL_VG_COM}        = $answer[ $col++ ];
                 $ret++;
             }
         }
         else {
             if ( my @answer = $self->sth->fetchrow_array() ) {
-                $parm_ref->{$DB_COL_VG_ID}   = $answer[0];
-                $parm_ref->{$DB_COL_VG_NAME} = $answer[1];
-                $parm_ref->{$DB_COL_VG_DESC} = $answer[2];
-                $parm_ref->{$DB_COL_VG_ACT}  = $answer[3];
-                $parm_ref->{$DB_COL_VG_COM}  = $answer[4];
+                my $col = 0;
+                $parm_ref->{$DB_COL_VG_ID}   = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_VG_NAME} = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_VG_DESC} = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_VG_ACT}  = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_VG_COM}  = $answer[ $col++ ];
                 $ret++;
             }
         }
@@ -4785,46 +4797,47 @@ sub get_vlangroup_name($$) {
 #-------------------------------------------------------
 # Get vlan numbers associated with a location id
 #-------------------------------------------------------
-sub get_vlan_for_locid_vlangroupid($$) {
-    my $self     = shift;
-    my $parm_ref = shift;
-    my $ret      = 0;
-
-    $self->reseterr;
-
-    if ( !defined $parm_ref ) { confess; }
-    if ( ref($parm_ref) ne 'HASH' ) { confess; }
-    if ( !defined $parm_ref->{$DB_COL_VLAN_LOCID} || ( !( isdigit $parm_ref->{$DB_COL_VLAN_LOCID} ) ) ) { confess Dumper $parm_ref; }
-    if ( !defined $parm_ref->{$DB_COL_VG2V_VGID}  || ( !( isdigit $parm_ref->{$DB_COL_VG2V_VGID} ) ) )  { confess Dumper $parm_ref; }
-    if ( !defined $parm_ref->{$HASH_REF} ) { confess; }
-    my $locid       = $parm_ref->{$DB_COL_VLAN_LOCID};
-    my $vlangroupid = $parm_ref->{$DB_COL_VG2V_VGID};
-    my $hash_ref    = $parm_ref->{$HASH_REF};
-
-    my $sql = 'SELECT vlan.vlanid,vlan.vlan,vlan.type,vlan.cidr,vlan.nacip,vlan.vlanname,vlan.vlandescription,vlan.active '
-      . ' FROM vlan,vlangroup2vlan '
-      . " WHERE vlan.locationid = $locid "
-      . " AND vlangroup2vlan.vlangroupid = $vlangroupid "
-      . ' AND vlan.vlanid = vlangroup2vlan.vlanid';
-
-    if ( $self->sqlexecute($sql) ) {
-        while ( my @answer = $self->sth->fetchrow_array() ) {
-            my %h;
-            $hash_ref->{ $answer[0] } = \%h;
-            $h{$DB_COL_VLAN_VLAN}     = $answer[1];
-            $h{$DB_COL_VLAN_TYPE}     = $answer[2];
-            $h{$DB_COL_VLAN_CIDR}     = $answer[3];
-            $h{$DB_COL_VLAN_NACIP}    = $answer[4];
-            $h{$DB_COL_VLAN_NAME}     = $answer[5];
-            $h{$DB_COL_VLAN_DESC}     = $answer[6];
-            $h{$DB_COL_VLAN_ACT}      = $answer[7];
-            $ret++;
-        }
-    }
-
-    # EventLog( EVENT_DEBUG, MYNAMELINE() . "Total: $ret" );
-    $ret;
-}
+#sub get_vlan_for_locid_vlangroupid($$) {
+#    my $self     = shift;
+#    my $parm_ref = shift;
+#    my $ret      = 0;
+#
+#    $self->reseterr;
+#
+#    if ( !defined $parm_ref ) { confess; }
+#    if ( ref($parm_ref) ne 'HASH' ) { confess; }
+#    if ( !defined $parm_ref->{$DB_COL_VLAN_LOCID} || ( !( isdigit $parm_ref->{$DB_COL_VLAN_LOCID} ) ) ) { confess Dumper $parm_ref; }
+#    if ( !defined $parm_ref->{$DB_COL_VG2V_VGID}  || ( !( isdigit $parm_ref->{$DB_COL_VG2V_VGID} ) ) )  { confess Dumper $parm_ref; }
+#    if ( !defined $parm_ref->{$HASH_REF} ) { confess; }
+#    my $locid       = $parm_ref->{$DB_COL_VLAN_LOCID};
+#    my $vlangroupid = $parm_ref->{$DB_COL_VG2V_VGID};
+#    my $hash_ref    = $parm_ref->{$HASH_REF};
+#
+#    my $sql = 'SELECT vlan.vlanid,vlan.vlan,vlan.cidr,vlan.vlanname,vlan.vlandescription,vlan.active,vlan.coe '
+#      . ' FROM vlan,vlangroup2vlan '
+#      . " WHERE vlan.locationid = $locid "
+#      . " AND vlangroup2vlan.vlangroupid = $vlangroupid "
+#      . ' AND vlan.vlanid = vlangroup2vlan.vlanid';
+#
+#    if ( $self->sqlexecute($sql) ) {
+#        while ( my @answer = $self->sth->fetchrow_array() ) {
+#            my %h;
+#            my $col = 0;
+#            $hash_ref->{ $answer[0] } = \%h;
+#            $h{$DB_COL_VLAN_ID}       = $answer[$col++];
+#            $h{$DB_COL_VLAN_VLAN}     = $answer[$col++];
+#            $h{$DB_COL_VLAN_CIDR}     = $answer[$col++];
+#            $h{$DB_COL_VLAN_NAME}     = $answer[$col++];
+#            $h{$DB_COL_VLAN_DESC}     = $answer[$col++];
+#            $h{$DB_COL_VLAN_ACT}      = $answer[$col++];
+#            $h{$DB_COL_VLAN_COE}      = $answer[$col++];
+#            $ret++;
+#        }
+#    }
+#
+#    # EventLog( EVENT_DEBUG, MYNAMELINE() . "Total: $ret" );
+#    $ret;
+#}
 
 #-------------------------------------------------------
 #
@@ -4862,18 +4875,20 @@ sub get_vlangroup2vlan($$) {
         while ( my @answer = $self->sth->fetchrow_array() ) {
             if ( defined $hash_ref ) {
                 my %v;
+                my $col = 0;
                 $hash_ref->{ $answer[0] } = \%v;
-                $v{$DB_COL_VG2V_ID}       = $answer[0];
-                $v{$DB_COL_VG2V_VLANID}   = $answer[1];
-                $v{$DB_COL_VG2V_VGID}     = $answer[2];
-                $v{$DB_COL_VG2V_PRI}      = $answer[3];
+                $v{$DB_COL_VG2V_ID}       = $answer[ $col++ ];
+                $v{$DB_COL_VG2V_VLANID}   = $answer[ $col++ ];
+                $v{$DB_COL_VG2V_VGID}     = $answer[ $col++ ];
+                $v{$DB_COL_VG2V_PRI}      = $answer[ $col++ ];
                 $ret++;
             }
             else {
-                $parm_ref->{$DB_COL_VG2V_ID}     = $answer[0];
-                $parm_ref->{$DB_COL_VG2V_VLANID} = $answer[1];
-                $parm_ref->{$DB_COL_VG2V_VGID}   = $answer[2];
-                $parm_ref->{$DB_COL_VG2V_PRI}    = $answer[3];
+                my $col = 0;
+                $parm_ref->{$DB_COL_VG2V_ID}     = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_VG2V_VLANID} = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_VG2V_VGID}   = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_VG2V_PRI}    = $answer[ $col++ ];
                 $ret++;
             }
         }
@@ -4930,33 +4945,35 @@ sub get_vlan($$) {
     if ( $self->sqlexecute($sql) ) {
         if ( !defined $hash_ref ) {
             while ( my @answer = $self->sth->fetchrow_array() ) {
-                $parm_ref->{$DB_COL_VLAN_ID}    = $answer[0];
-                $parm_ref->{$DB_COL_VLAN_NAME}  = $answer[1];
-                $parm_ref->{$DB_COL_VLAN_VLAN}  = $answer[2];
-                $parm_ref->{$DB_COL_VLAN_TYPE}  = $answer[3];
-                $parm_ref->{$DB_COL_VLAN_LOCID} = $answer[4];
-                $parm_ref->{$DB_COL_VLAN_CIDR}  = $answer[5];
-                $parm_ref->{$DB_COL_VLAN_NACIP} = $answer[6];
-                $parm_ref->{$DB_COL_VLAN_DESC}  = $answer[7];
-                $parm_ref->{$DB_COL_VLAN_ACT}   = $answer[8];
-                $parm_ref->{$DB_COL_VLAN_COM}   = $answer[9];
+                my $col = 0;
+                $parm_ref->{$DB_COL_VLAN_ID}    = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_VLAN_NAME}  = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_VLAN_VLAN}  = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_VLAN_TYPE}  = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_VLAN_LOCID} = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_VLAN_CIDR}  = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_VLAN_NACIP} = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_VLAN_DESC}  = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_VLAN_ACT}   = $answer[ $col++ ];
+                $parm_ref->{$DB_COL_VLAN_COM}   = $answer[ $col++ ];
                 $ret++;
             }
         }
         else {
             while ( my @answer = $self->sth->fetchrow_array() ) {
                 my %v;
+                my $col = 0;
                 $hash_ref->{ $answer[0] } = \%v;
-                $v{$DB_COL_VLAN_ID}       = $answer[0];
-                $v{$DB_COL_VLAN_NAME}     = $answer[1];
-                $v{$DB_COL_VLAN_VLAN}     = $answer[2];
-                $v{$DB_COL_VLAN_TYPE}     = $answer[3];
-                $v{$DB_COL_VLAN_LOCID}    = $answer[4];
-                $v{$DB_COL_VLAN_CIDR}     = $answer[5];
-                $v{$DB_COL_VLAN_NACIP}    = $answer[6];
-                $v{$DB_COL_VLAN_DESC}     = $answer[7];
-                $v{$DB_COL_VLAN_ACT}      = $answer[8];
-                $v{$DB_COL_VLAN_COM}      = $answer[9];
+                $v{$DB_COL_VLAN_ID}       = $answer[ $col++ ];
+                $v{$DB_COL_VLAN_NAME}     = $answer[ $col++ ];
+                $v{$DB_COL_VLAN_VLAN}     = $answer[ $col++ ];
+                $v{$DB_COL_VLAN_TYPE}     = $answer[ $col++ ];
+                $v{$DB_COL_VLAN_LOCID}    = $answer[ $col++ ];
+                $v{$DB_COL_VLAN_CIDR}     = $answer[ $col++ ];
+                $v{$DB_COL_VLAN_NACIP}    = $answer[ $col++ ];
+                $v{$DB_COL_VLAN_DESC}     = $answer[ $col++ ];
+                $v{$DB_COL_VLAN_ACT}      = $answer[ $col++ ];
+                $v{$DB_COL_VLAN_COM}      = $answer[ $col++ ];
                 $ret++;
             }
         }
@@ -4984,87 +5001,91 @@ sub get_vlan_name($$) {
 #-------------------------------------------------------
 #
 #-------------------------------------------------------
-sub get_vlan2swp($$) {
-    my $self     = shift;
-    my $parm_ref = shift;
-    my $ret      = 0;
-
-    $self->reseterr;
-
-    if ( !defined $parm_ref ) { confess; }
-    if ( ref($parm_ref) ne 'HASH' ) { confess; }
-    if ( !defined( $parm_ref->{$HASH_REF} ) || ref( $parm_ref->{$HASH_REF} ) ne 'HASH' ) { confess Dumper $parm_ref; }
-    if ( !defined $parm_ref->{$DB_COL_VLAN2SWP_VLANID} || ( !( isdigit $parm_ref->{$DB_COL_VLAN2SWP_VLANID} ) ) ) { confess Dumper $parm_ref; }
-    if ( !defined $parm_ref->{$DB_COL_VLAN2SWP_SWPID}  || ( !( isdigit $parm_ref->{$DB_COL_VLAN2SWP_SWPID} ) ) )  { confess Dumper $parm_ref; }
-
-    my $hash_ref = $parm_ref->{$HASH_REF};
-    my $vlanid   = $parm_ref->{$DB_COL_VLAN2SWP_VLANID};
-    my $swpid    = $parm_ref->{$DB_COL_VLAN2SWP_SWPID};
-
-    my $sql = " SELECT vlan.vlanid, vlan.vlan, vlan.vlanname "
-      . " FROM vlan, switch2vlan, switchport "
-      . " WHERE switchport.switchid = switch2vlan.switchid "
-      . " AND switch2vlan.vlanid = vlan.vlanid "
-      . " AND switchport.switchportid = $swpid "
-      . " AND vlan.vlanid = $vlanid "
-      ;
-
-    if ( $self->sqlexecute($sql) ) {
-        while ( my @answer = $self->sth->fetchrow_array() ) {
-            my %v;
-            $hash_ref->{ $answer[0] } = \%v;
-            $v{$DB_COL_VLAN2SWP_VLAN} = $answer[1];
-            $v{$DB_COL_VLAN2SWP_NAME} = $answer[2];
-            $ret++;
-        }
-    }
-
-    $ret;
-}
+#sub get_vlan2swp($$) {
+#    my $self     = shift;
+#    my $parm_ref = shift;
+#    my $ret      = 0;
+#
+#    $self->reseterr;
+#
+#    if ( !defined $parm_ref ) { confess; }
+#    if ( ref($parm_ref) ne 'HASH' ) { confess; }
+#    if ( !defined( $parm_ref->{$HASH_REF} ) || ref( $parm_ref->{$HASH_REF} ) ne 'HASH' ) { confess Dumper $parm_ref; }
+#    if ( !defined $parm_ref->{$DB_COL_VLAN2SWP_VLANID} || ( !( isdigit $parm_ref->{$DB_COL_VLAN2SWP_VLANID} ) ) ) { confess Dumper $parm_ref; }
+#    if ( !defined $parm_ref->{$DB_COL_VLAN2SWP_SWPID}  || ( !( isdigit $parm_ref->{$DB_COL_VLAN2SWP_SWPID} ) ) )  { confess Dumper $parm_ref; }
+#
+#    my $hash_ref = $parm_ref->{$HASH_REF};
+#    my $vlanid   = $parm_ref->{$DB_COL_VLAN2SWP_VLANID};
+#    my $swpid    = $parm_ref->{$DB_COL_VLAN2SWP_SWPID};
+#
+#    my $sql = " SELECT vlan.vlanid, vlan.vlan, vlan.vlanname "
+#      . " FROM vlan, switch2vlan, switchport "
+#      . " WHERE switchport.switchid = switch2vlan.switchid "
+#      . " AND switch2vlan.vlanid = vlan.vlanid "
+#      . " AND switchport.switchportid = $swpid "
+#      . " AND vlan.vlanid = $vlanid "
+#      ;
+#
+#    if ( $self->sqlexecute($sql) ) {
+#        while ( my @answer = $self->sth->fetchrow_array() ) {
+#            my %v;
+#                my $col = 0;
+#            $hash_ref->{ $answer[0] } = \%v;
+#            $v{$DB_COL_VLAN2SWP_VLANID} = $answer[$col++];
+#            $v{$DB_COL_VLAN2SWP_VLAN} = $answer[$col++];
+#            $v{$DB_COL_VLAN2SWP_NAME} = $answer[$col++];
+#            $ret++;
+#        }
+#    }
+#
+#    $ret;
+#}
 
 #-------------------------------------------------------
 #
 #-------------------------------------------------------
-sub get_vg2swp($$) {
-    my $self     = shift;
-    my $parm_ref = shift;
-    my $ret      = 0;
-
-    $self->reseterr;
-
-    if ( !defined $parm_ref ) { confess; }
-    if ( ref($parm_ref) ne 'HASH' ) { confess; }
-    if ( !defined( $parm_ref->{$HASH_REF} ) || ref( $parm_ref->{$HASH_REF} ) ne 'HASH' ) { confess Dumper $parm_ref; }
-    if ( !defined $parm_ref->{$DB_COL_VG2SWP_VGID}  || ( !( isdigit $parm_ref->{$DB_COL_VG2SWP_VGID} ) ) )  { confess Dumper $parm_ref; }
-    if ( !defined $parm_ref->{$DB_COL_VG2SWP_SWPID} || ( !( isdigit $parm_ref->{$DB_COL_VG2SWP_SWPID} ) ) ) { confess Dumper $parm_ref; }
-
-    my $hash_ref = $parm_ref->{$HASH_REF};
-    my $vgid     = $parm_ref->{$DB_COL_VG2SWP_VGID};
-    my $swpid    = $parm_ref->{$DB_COL_VG2SWP_SWPID};
-
-    my $sql = " SELECT vlan.vlanid, vlan.vlan, vlan.vlanname, vlangroup.vlangroupname "
-      . " FROM vlan, switch2vlan, switchport, vlangroup2vlan, vlangroup "
-      . " WHERE switchport.switchid = switch2vlan.switchid "
-      . " AND switch2vlan.vlanid = vlan.vlanid "
-      . " AND vlangroup2vlan.vlanid = vlan.vlanid "
-      . " AND vlangroup2vlan.vlangroupid = vlangroup.vlangroupid "
-      . " AND switchport.switchportid = $swpid "
-      . " AND vlangroup.vlangroupid = $vgid "
-      ;
-
-    if ( $self->sqlexecute($sql) ) {
-        while ( my @answer = $self->sth->fetchrow_array() ) {
-            my %v;
-            $hash_ref->{ $answer[0] } = \%v;
-            $v{$DB_COL_VG2SWP_VLAN}   = $answer[1];
-            $v{$DB_COL_VG2SWP_NAME}   = $answer[2];
-            $v{$DB_COL_VG2SWP_VGNAME} = $answer[3];
-            $ret++;
-        }
-    }
-
-    $ret;
-}
+#sub get_vg2swp($$) {
+#    my $self     = shift;
+#    my $parm_ref = shift;
+#    my $ret      = 0;
+#
+#    $self->reseterr;
+#
+#    if ( !defined $parm_ref ) { confess; }
+#    if ( ref($parm_ref) ne 'HASH' ) { confess; }
+#    if ( !defined( $parm_ref->{$HASH_REF} ) || ref( $parm_ref->{$HASH_REF} ) ne 'HASH' ) { confess Dumper $parm_ref; }
+#    if ( !defined $parm_ref->{$DB_COL_VG2SWP_VGID}  || ( !( isdigit $parm_ref->{$DB_COL_VG2SWP_VGID} ) ) )  { confess Dumper $parm_ref; }
+#    if ( !defined $parm_ref->{$DB_COL_VG2SWP_SWPID} || ( !( isdigit $parm_ref->{$DB_COL_VG2SWP_SWPID} ) ) ) { confess Dumper $parm_ref; }
+#
+#    my $hash_ref = $parm_ref->{$HASH_REF};
+#    my $vgid     = $parm_ref->{$DB_COL_VG2SWP_VGID};
+#    my $swpid    = $parm_ref->{$DB_COL_VG2SWP_SWPID};
+#
+#    my $sql = " SELECT vlan.vlanid, vlan.vlan, vlan.vlanname, vlangroup.vlangroupname "
+#      . " FROM vlan, switch2vlan, switchport, vlangroup2vlan, vlangroup "
+#      . " WHERE switchport.switchid = switch2vlan.switchid "
+#      . " AND switch2vlan.vlanid = vlan.vlanid "
+#      . " AND vlangroup2vlan.vlanid = vlan.vlanid "
+#      . " AND vlangroup2vlan.vlangroupid = vlangroup.vlangroupid "
+#      . " AND switchport.switchportid = $swpid "
+#      . " AND vlangroup.vlangroupid = $vgid "
+#      ;
+#
+#    if ( $self->sqlexecute($sql) ) {
+#        while ( my @answer = $self->sth->fetchrow_array() ) {
+#            my %v;
+#                my $col = 0;
+#            $hash_ref->{ $answer[0] } = \%v;
+#            $v{$DB_COL_VG2SWP_VGID}   = $answer[$col++];
+#            $v{$DB_COL_VG2SWP_VLAN}   = $answer[$col++];
+#            $v{$DB_COL_VG2SWP_NAME}   = $answer[$col++];
+#            $v{$DB_COL_VG2SWP_VGNAME} = $answer[$col++];
+#            $ret++;
+#        }
+#    }
+#
+#    $ret;
+#}
 
 #-------------------------------------------------------
 #

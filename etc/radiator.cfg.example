@@ -1,0 +1,47 @@
+#
+# Configuration file for Radiator radius server
+# Set according to your directory structure
+#
+DbDir		/home/nac/radiator
+LogDir		/home/nac/log
+LogFile		%L/radiator-%Y%m%d
+PidFile		/home/nac/run/radiusd.pid
+DictionaryFile	%D/dictionary
+
+# At level 0 (the default), only serious errors are logged. 
+# At level 1, warnings are also logged
+# At level 2, normal but significant event are also logged, 
+# At level 3, informational messages are also logged,
+# At level 4, debugging messages are also logged.
+# At level 5, hex packet dumps of all incoming packets are also printed.
+Trace	4
+
+AuthPort	1812
+AcctPort	1813
+
+BindAddress 0.0.0.0
+
+User nac
+Group nac
+
+# Use FarmSize 1 for debugging
+#FarmSize 1
+FarmSize 10
+
+<Client DEFAULT>
+    Secret UberSecretPassword
+    DupInterval 0
+    IgnoreAcctSignature
+</Client>
+
+#
+# This coresponds to Radiator::AuthNAC2
+#
+<AuthBy NAC2>
+	Identifier NACAUTHDB
+</AuthBy>
+
+<Realm DEFAULT>
+	AuthBy NACAUTHDB
+</Realm>
+

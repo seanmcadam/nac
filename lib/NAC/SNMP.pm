@@ -102,7 +102,7 @@
 
 package NAC::SNMP;
 use FindBin;
-use lib "$FindBin::Bin/../lib";
+use lib "$FindBin::Bin/..";
 use base qw( Exporter );
 use Readonly;
 use Data::Dumper;

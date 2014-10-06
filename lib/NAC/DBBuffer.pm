@@ -18,7 +18,7 @@
 
 package NAC::DBBuffer;
 use FindBin;
-use lib "$FindBin::Bin/../lib";
+use lib "$FindBin::Bin/..";
 use base qw( Exporter );
 use Readonly;
 use Data::Dumper;
@@ -131,7 +131,7 @@ sub new {
 
     if ( ( defined $parm_ref ) && ( ref($parm_ref) ne 'HASH' ) ) { confess; }
 
-    EventLog( EVENT_START, MYNAME . "() started" );
+    EventLog( EVENT_DEBUG, MYNAME . "() started" );
 
     my %parms = ();
 

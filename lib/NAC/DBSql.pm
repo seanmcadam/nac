@@ -19,7 +19,7 @@
 
 package NAC::DBSql;
 use FindBin;
-use lib "$FindBin::Bin/../lib";
+use lib "$FindBin::Bin/..";
 use base qw( Exporter );
 use Readonly;
 use Data::Dumper;
@@ -29,7 +29,6 @@ use DBD::mysql;
 use POSIX;
 use Readonly;
 
-# use IO::Socket::INET;
 use NAC::Syslog;
 use NAC::Constants;
 use NAC::DBConsts;
@@ -99,7 +98,7 @@ sub new {
     if ( !defined $sql_parm_ref->{$SQL_PASS} )  { confess; }
     if ( !defined $sql_parm_ref->{$SQL_CLASS} ) { confess; }
 
-    EventLog( EVENT_START, MYNAME . "() started" );
+    EventLog( EVENT_DEBUG, MYNAME . "() started" );
 
     my $db      = $sql_parm_ref->{$SQL_DB};
     my $host    = $sql_parm_ref->{$SQL_HOST};
@@ -417,11 +416,11 @@ sub sql_connected {
         return 0;
     }
     elsif ( !defined $self->{$SQL_DBH} ) {
-        EventLog( EVENT_WARN, MYNAMELINE() . " Missing DBH" );
+        EventLog( EVENT_DEBUG, MYNAMELINE() . " Missing DBH" );
         return 0;
     }
     elsif ( !$self->{$SQL_DBH}->ping ) {
-        EventLog( EVENT_WARN, MYNAMELINE() . " DB Not Pingable " );
+        EventLog( EVENT_DEBUG, MYNAMELINE() . " DB Not Pingable " );
         return 0;
     }
     else {
@@ -567,8 +566,7 @@ sub connect {
 #
 #-------------------------------------------------------
 sub __delete_record($$) {
-    my $self     = shift;
-    my $parm_ref = shift;
+    my ($self,$parm_ref) = @_;
     my $ret      = 0;
 
     if ( !defined $parm_ref ) { confess; }
@@ -602,8 +600,7 @@ sub __delete_record($$) {
 # Translate DB_COL to use update_record()
 #-------------------------------------------------------
 sub __update_record_db_col($$) {
-    my $self     = shift;
-    my $parm_ref = shift;
+    my ($self,$parm_ref) = @_;
     my $ret      = 0;
 
     $self->reseterr;
@@ -636,8 +633,7 @@ sub __update_record_db_col($$) {
 #            {UPDATE_columnname} => value
 #-------------------------------------------------------
 sub __update_record($$) {
-    my $self     = shift;
-    my $parm_ref = shift;
+    my ($self,$parm_ref) = @_;
     my $ret      = 0;
 
     $self->reseterr;

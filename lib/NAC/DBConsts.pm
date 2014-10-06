@@ -16,7 +16,7 @@
 
 package NAC::DBConsts;
 use FindBin;
-use lib "$FindBin::Bin/../lib";
+use lib "$FindBin::Bin/..";
 
 use base qw( Exporter );
 use Readonly;
@@ -40,7 +40,7 @@ Readonly our $DB_BUF_TABLE_LASTSEEN_SWITCHPORT        => 'lastseen_switchport';
 Readonly our $DB_BUF_TABLE_SWITCHPORTSTATE            => 'switchportstate';
 Readonly our $DB_TABLE_CLASS                          => 'class';
 Readonly our $DB_TABLE_CLASSMACPORT                   => 'classmacport-pusdo-table';
-Readonly our $DB_TABLE_DHCPSTATE                      => 'dhcpstate';
+# Readonly our $DB_TABLE_DHCPSTATE                      => 'dhcpstate';
 Readonly our $DB_TABLE_COE_MAC_EXCEPTION              => 'coe_mac_exception';
 Readonly our $DB_TABLE_EVENTLOG                       => 'eventlog';
 Readonly our $DB_TABLE_LOCATION                       => 'location';
@@ -229,10 +229,10 @@ Readonly our $DB_COL_DME_MACID                        => 'COE-MAC-EXCEPTION-MACI
 Readonly our $DB_COL_DME_TICKETREF                    => 'COE-MAC-EXCEPTION-TICKETREF';
 Readonly our $DB_COL_DME_CREATED                      => 'COE-MAC-EXCEPTION-CREATED';
 Readonly our $DB_COL_DME_COMMENT                      => 'COE-MAC-EXCEPTION-COMMENT';
-Readonly our $DB_COL_DHCPS_MACID                      => 'DHCP-STATE-MACID';
-Readonly our $DB_COL_DHCPS_LASTUPDATE                 => 'DHCP-STATE-LASTUPDATE';
-Readonly our $DB_COL_DHCPS_STATE                      => 'DHCP-STATE-STATE';
-Readonly our $DB_COL_DHCPS_IP                         => 'DHCP-STATE-IP';
+# Readonly our $DB_COL_DHCPS_MACID                      => 'DHCP-STATE-MACID';
+# Readonly our $DB_COL_DHCPS_LASTUPDATE                 => 'DHCP-STATE-LASTUPDATE';
+# Readonly our $DB_COL_DHCPS_STATE                      => 'DHCP-STATE-STATE';
+# Readonly our $DB_COL_DHCPS_IP                         => 'DHCP-STATE-IP';
 Readonly our $DB_COL_LOC_ID                           => 'LOCATION-ID';
 Readonly our $DB_COL_LOC_SITE                         => 'LOCATION-SITE';
 Readonly our $DB_COL_LOC_BLDG                         => 'LOCATION-BLDG';
@@ -368,9 +368,9 @@ Readonly our $DB_COL_VG2V_PRI                         => 'VLANGROUP2VLAN-PRIORIT
 Readonly our $DB_COL_VLAN_ID                          => 'VLAN-ID';
 Readonly our $DB_COL_VLAN_LOCID                       => 'VLAN-LOCID';
 Readonly our $DB_COL_VLAN_VLAN                        => 'VLAN-VLAN';
-Readonly our $DB_COL_VLAN_TYPE                        => 'VLAN-TYPE';
+# Readonly our $DB_COL_VLAN_TYPE                        => 'VLAN-TYPE';
 Readonly our $DB_COL_VLAN_CIDR                        => 'VLAN-CIDR';
-Readonly our $DB_COL_VLAN_NACIP                       => 'VLAN-NACIP';
+# Readonly our $DB_COL_VLAN_NACIP                       => 'VLAN-NACIP';
 Readonly our $DB_COL_VLAN_NAME                        => 'VLAN-NAME';
 Readonly our $DB_COL_VLAN_DESC                        => 'VLAN-DESC';
 Readonly our $DB_COL_VLAN_ACT                         => 'VLAN-ACTIVE';
@@ -529,10 +529,10 @@ Readonly our %column_names => (
     $DB_COL_CMP_LOCID                        => 'locid',
     $DB_COL_CMP_REAUTH                       => 'reauthtime',
     $DB_COL_CMP_IDLE                         => 'idletimeout',
-    $DB_COL_DHCPS_MACID                      => 'macid',
-    $DB_COL_DHCPS_LASTUPDATE                 => 'lastupdate',
-    $DB_COL_DHCPS_STATE                      => 'state',
-    $DB_COL_DHCPS_IP                         => 'ip',
+#     $DB_COL_DHCPS_MACID                      => 'macid',
+#     $DB_COL_DHCPS_LASTUPDATE                 => 'lastupdate',
+#     $DB_COL_DHCPS_STATE                      => 'state',
+#     $DB_COL_DHCPS_IP                         => 'ip',
     $DB_COL_EVENTLOG_ID                      => 'eventlogid',
     $DB_COL_EVENTLOG_USERID                  => 'userid',
     $DB_COL_EVENTLOG_TIME                    => 'eventtime',
@@ -669,9 +669,9 @@ Readonly our %column_names => (
     $DB_COL_VLAN_ID                          => 'vlanid',
     $DB_COL_VLAN_LOCID                       => 'locid',
     $DB_COL_VLAN_VLAN                        => 'vlan',
-    $DB_COL_VLAN_TYPE                        => 'type',
+#    $DB_COL_VLAN_TYPE                        => 'type',
     $DB_COL_VLAN_CIDR                        => 'cidr',
-    $DB_COL_VLAN_NACIP                       => 'nacip',
+#    $DB_COL_VLAN_NACIP                       => 'nacip',
     $DB_COL_VLAN_NAME                        => 'vlanname',
     $DB_COL_VLAN_DESC                        => 'vlandescription',
     $DB_COL_VLAN_ACT                         => 'active',
@@ -726,7 +726,7 @@ Readonly our %tablenames => (
     $DB_BUF_TABLE_LASTSEEN_SWITCHPORT => 1,
     $DB_BUF_TABLE_SWITCHPORTSTATE     => 1,
     $DB_TABLE_CLASS                   => 1,
-    $DB_TABLE_DHCPSTATE               => 1,
+#     $DB_TABLE_DHCPSTATE               => 1,
     $DB_TABLE_COE_MAC_EXCEPTION       => 1,
     $DB_TABLE_EVENTLOG                => 1,
     $DB_TABLE_LOCATION                => 1,
@@ -796,7 +796,7 @@ Readonly our %tableswithactive => (
 Readonly our %key2table => (
     $DB_COL_CLASS_ID    => $DB_TABLE_CLASS,
     $DB_COL_DME_MACID   => $DB_TABLE_COE_MAC_EXCEPTION,
-    $DB_COL_DHCPS_MACID => $DB_TABLE_DHCPSTATE,
+#     $DB_COL_DHCPS_MACID => $DB_TABLE_DHCPSTATE,
     $DB_COL_EVENTLOG_ID => $DB_TABLE_EVENTLOG,
     $DB_COL_LOC_ID      => $DB_TABLE_LOCATION,
     $DB_COL_LOOP_ID     => $DB_TABLE_LOOPCIDR2LOC,
@@ -977,10 +977,6 @@ our @EXPORT = qw (
   $DB_COL_DME_TICKETREF
   $DB_COL_DME_CREATED
   $DB_COL_DME_COMMENT
-  $DB_COL_DHCPS_MACID
-  $DB_COL_DHCPS_LASTUPDATE
-  $DB_COL_DHCPS_STATE
-  $DB_COL_DHCPS_IP
   $DB_COL_EVENTLOG_ID
   $DB_COL_EVENTLOG_USERID
   $DB_COL_EVENTLOG_TIME
@@ -1216,7 +1212,6 @@ our @EXPORT = qw (
   $DB_TABLE_CLASS
   $DB_TABLE_CLASSMACPORT
   $DB_TABLE_COE_MAC_EXCEPTION
-  $DB_TABLE_DHCPSTATE
   $DB_TABLE_EVENTLOG
   $DB_TABLE_LOCATION
   $DB_TABLE_LOOPCIDR2LOC
@@ -1258,3 +1253,8 @@ our @EXPORT = qw (
   $SLAVE_STATE_DELAYED
 );
 
+#   $DB_COL_DHCPS_MACID
+#   $DB_COL_DHCPS_LASTUPDATE
+#   $DB_COL_DHCPS_STATE
+#   $DB_COL_DHCPS_IP
+#   $DB_TABLE_DHCPSTATE

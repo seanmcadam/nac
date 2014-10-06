@@ -1,6 +1,14 @@
+
+DEV 3.1.x.x
+v3.1.0.0 	- added alternate mac method in AuthNAC2
+		- Corrected bug in add_switchportstate()
+v3.1.0.1	-
+
+
+Release 3.2.x.x
+
 --------------------------------------------------------
-
-
+Perl Modules
 --------------------------------------------------------
 
 Infoblox - used to access infoblox perl API
@@ -16,15 +24,22 @@ Locations - Consists of a Site and A Building ID
 	A location is more or less a layer-3 boundry.
 	
 Switches (hosts) - input of switches (hostname, IPs, location-site,bldg)
-	Each switch it assinged a unique ID when added, from that point forward the IP address is the unique reference when updating it
+	Each switch it assinged a unique ID when added, from that point forward the IP address is the unique 
+	reference when updating it
 
 
-VLANs - a specific network boundy at one location, there can be several IP address ranges in the VLAN which would result in multiple entries
+VLANs - a specific network boundry at one location, there can be several IP address ranges in the VLAN which 
+	would result in multiple VLAN entries
 	Each vlan is associated with each switch at a location that supports the vlan
+	Each VLAN is maked as a COE VLAN with a Y/N. If it is yes the vlan is restricted to COE MACs.
 
 
 VlanGroups - A collection of vlans
 
 Templates - A collection of vlangroups
 
+MAC - A unique host identifier
+	Has a first and last seen record.
+	Asset Tag record for associating the device with either an asset tag or a hostname
+	Has a COE indicator specifing if the system is eligable for access to COE vlans
 

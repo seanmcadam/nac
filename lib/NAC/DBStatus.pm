@@ -21,7 +21,7 @@
 
 package NAC::DBStatus;
 use FindBin;
-use lib "$FindBin::Bin/../lib";
+use lib "$FindBin::Bin/..";
 use Readonly;
 use Data::Dumper;
 use Sys::Syslog qw(:standard :macros);
@@ -60,7 +60,7 @@ sub new {
     my ($class) = @_;
     my $self;
 
-    EventLog( EVENT_START, MYNAME . "() started" );
+    EventLog( EVENT_DEBUG, MYNAME . "() started" );
 
     my %parms = ();
 
@@ -341,7 +341,7 @@ sub get_switchport {
 }
 
 #-------------------------------------------------------
-# Get Switchport
+# Get switchport
 #-------------------------------------------------------
 sub get_next_switchport {
     my ( $self, $offset ) = @_;
@@ -568,20 +568,14 @@ sub add_mac {
       . ', '
       . $column_names{$DB_COL_STATUS_MAC_MAC}
       . ', '
-      . ( ( defined $parm_ref->{$DB_COL_STATUS_MAC_LASTSEEN} ) ?
-          ( $column_names{$DB_COL_STATUS_MAC_LASTSEEN} . ', ' )
-        : ''
-      )
+      . ( ( defined $parm_ref->{$DB_COL_STATUS_MAC_LASTSEEN} ) ?  ( $column_names{$DB_COL_STATUS_MAC_LASTSEEN} . ', ' ) : '')
       . $column_names{$DB_COL_STATUS_MAC_HOSTNAME}
       . ' ) VALUES ( '
       . $parm_ref->{$DB_COL_STATUS_MAC_MACID}
       . ', '
       . "'" . $parm_ref->{$DB_COL_STATUS_MAC_MAC} . "'"
       . ', '
-      . ( ( defined $parm_ref->{$DB_COL_STATUS_MAC_LASTSEEN} ) ?
-          ( "'" . $parm_ref->{$DB_COL_STATUS_MAC_LASTSEEN} . "'" . ', ' )
-        : ''
-      )
+      . ( ( defined $parm_ref->{$DB_COL_STATUS_MAC_LASTSEEN} ) ?  ( "'" . $parm_ref->{$DB_COL_STATUS_MAC_LASTSEEN} . "'" . ', ' ) : '')
       . "'" . $myhostname . "'"
       . ' ) '
       ;
@@ -757,10 +751,7 @@ sub add_switchport {
       . ', '
       . $column_names{$DB_COL_STATUS_SWITCHPORT_BLDG}
       . ', '
-      . ( ( ( defined $lastseen ) && ( $lastseen ne '' ) ) ?
-          ( $column_names{$DB_COL_STATUS_SWITCHPORT_LASTSEEN} . ', ' )
-        : ''
-      )
+      . ( ( ( defined $lastseen ) && ( $lastseen ne '' ) ) ?  ( $column_names{$DB_COL_STATUS_SWITCHPORT_LASTSEEN} . ', ' ) : '')
       . $column_names{$DB_COL_STATUS_SWITCHPORT_HOSTNAME}
       . ' ) VALUES ( '
       . $parm_ref->{$DB_COL_STATUS_SWITCHPORT_SWITCHPORTID}
@@ -777,10 +768,7 @@ sub add_switchport {
       . ', '
       . "'" . $parm_ref->{$DB_COL_STATUS_SWITCHPORT_BLDG} . "'"
       . ', '
-      . ( ( ( defined $lastseen ) && ( $lastseen ne '' ) ) ?
-          ( "'" . $parm_ref->{$DB_COL_STATUS_SWITCHPORT_LASTSEEN} . "'" . ', ' )
-        : ''
-      )
+      . ( ( ( defined $lastseen ) && ( $lastseen ne '' ) ) ?  ( "'" . $parm_ref->{$DB_COL_STATUS_SWITCHPORT_LASTSEEN} . "'" . ', ' ) : '')
       . "'" . $myhostname . "'"
       . ' ) '
       ;
@@ -814,12 +802,9 @@ sub update_host_lastseen {
         my $sql = "UPDATE "
           . $DB_STATUS_TABLE_HOST
           . ' SET '
-          . $column_names{$DB_COL_STATUS_HOST_LASTSEEN}
-          . ' = '
-          . $lastseen
+          . $column_names{$DB_COL_STATUS_HOST_LASTSEEN} . ' = ' . $lastseen
           . ' WHERE '
-          . $column_names{$DB_COL_STATUS_HOST_HOSTNAME}
-          . " = '$myhostname' "
+          . $column_names{$DB_COL_STATUS_HOST_HOSTNAME} . " = '$myhostname' "
           ;
 
         if ( $self->sqldo($sql) ) {
@@ -851,14 +836,10 @@ sub update_slave_status {
         my $sql = "UPDATE "
           . $DB_STATUS_TABLE_HOST
           . ' SET '
-          . $column_names{$DB_COL_STATUS_HOST_SLAVECHECKIN}
-          . ' = NOW() '
-          . ( ( $cur_status ne $status )
-            ? ( ', ' . $column_names{$DB_COL_STATUS_HOST_SLAVESTATUS} . " = '$status' " )
-            : '' )
+          . $column_names{$DB_COL_STATUS_HOST_SLAVECHECKIN} . ' = NOW() '
+          . ( ( $cur_status ne $status ) ? ( ', ' . $column_names{$DB_COL_STATUS_HOST_SLAVESTATUS} . " = '$status' " ) : '' )
           . ' WHERE '
-          . $column_names{$DB_COL_STATUS_HOST_HOSTNAME}
-          . " = '$myhostname' "
+          . $column_names{$DB_COL_STATUS_HOST_HOSTNAME} . " = '$myhostname' "
           ;
 
         if ( $self->sqldo($sql) ) {
@@ -898,12 +879,9 @@ sub update_location_lastseen {
         my $sql = "UPDATE "
           . $DB_STATUS_TABLE_LOCATION
           . ' SET '
-          . $column_names{$DB_COL_STATUS_LOCATION_LASTSEEN}
-          . ' = '
-          . $lastseen
+          . $column_names{$DB_COL_STATUS_LOCATION_LASTSEEN} . ' = ' . $lastseen
           . ' WHERE '
-          . $column_names{$DB_COL_STATUS_LOCATION_LOCATIONID}
-          . " = $id "
+          . $column_names{$DB_COL_STATUS_LOCATION_LOCATIONID} . " = $id "
           ;
 
         if ( $self->sqldo($sql) ) {
@@ -982,12 +960,9 @@ sub update_switch_lastseen {
         my $sql = "UPDATE "
           . $DB_STATUS_TABLE_SWITCH
           . ' SET '
-          . $column_names{$DB_COL_STATUS_SWITCH_LASTSEEN}
-          . ' = '
-          . $lastseen
-          . ' WHERE '
-          . $column_names{$DB_COL_STATUS_SWITCH_SWITCHID}
-          . " = $id "
+          . $column_names{$DB_COL_STATUS_SWITCH_LASTSEEN} . ' = ' . $lastseen
+          . ' WHERE ' 
+	  . $column_names{$DB_COL_STATUS_SWITCH_SWITCHID} . " = $id "
           ;
 
         if ( $self->sqldo($sql) ) {
@@ -1024,12 +999,9 @@ sub update_switchport_lastseen {
         my $sql = "UPDATE "
           . $DB_STATUS_TABLE_SWITCHPORT
           . ' SET '
-          . $column_names{$DB_COL_STATUS_SWITCHPORT_LASTSEEN}
-          . ' = '
-          . $lastseen
+          . $column_names{$DB_COL_STATUS_SWITCHPORT_LASTSEEN} . ' = ' . $lastseen
           . ' WHERE '
-          . $column_names{$DB_COL_STATUS_SWITCHPORT_SWITCHPORTID}
-          . " = $id "
+          . $column_names{$DB_COL_STATUS_SWITCHPORT_SWITCHPORTID} . " = $id "
           ;
 
         if ( $self->sqldo($sql) ) {
@@ -1059,12 +1031,9 @@ sub update_switchport_ifindex {
         my $sql = "UPDATE "
           . $DB_STATUS_TABLE_SWITCHPORT
           . ' SET '
-          . $column_names{$DB_COL_STATUS_SWITCHPORT_IFINDEX}
-          . ' = '
-          . $ifindex
+          . $column_names{$DB_COL_STATUS_SWITCHPORT_IFINDEX} . ' = ' . $ifindex
           . ' WHERE '
-          . $column_names{$DB_COL_STATUS_SWITCHPORT_SWITCHPORTID}
-          . " = $id "
+          . $column_names{$DB_COL_STATUS_SWITCHPORT_SWITCHPORTID} . " = $id "
           ;
 
         if ( $self->sqldo($sql) ) {
@@ -1094,12 +1063,9 @@ sub update_switchport_description {
         my $sql = "UPDATE "
           . $DB_STATUS_TABLE_SWITCHPORT
           . ' SET '
-          . $column_names{$DB_COL_STATUS_SWITCHPORT_DESCRIPTION}
-          . ' = '
-          . "'" . $description . "'"
+          . $column_names{$DB_COL_STATUS_SWITCHPORT_DESCRIPTION} . ' = ' . "'" . $description . "'"
           . ' WHERE '
-          . $column_names{$DB_COL_STATUS_SWITCHPORT_SWITCHPORTID}
-          . " = $id "
+          . $column_names{$DB_COL_STATUS_SWITCHPORT_SWITCHPORTID} . " = $id "
           ;
 
         if ( $self->sqldo($sql) ) {
@@ -1129,12 +1095,9 @@ sub update_switchport_operstatus {
         my $sql = "UPDATE "
           . $DB_STATUS_TABLE_SWITCHPORT
           . ' SET '
-          . $column_names{$DB_COL_STATUS_SWITCHPORT_OPERSTATUS}
-          . ' = '
-          . $operstatus
+          . $column_names{$DB_COL_STATUS_SWITCHPORT_OPERSTATUS} . ' = ' . $operstatus
           . ' WHERE '
-          . $column_names{$DB_COL_STATUS_SWITCHPORT_SWITCHPORTID}
-          . " = $id "
+          . $column_names{$DB_COL_STATUS_SWITCHPORT_SWITCHPORTID} . " = $id "
           ;
 
         if ( $self->sqldo($sql) ) {
@@ -1164,12 +1127,9 @@ sub update_switchport_adminstatus {
         my $sql = "UPDATE "
           . $DB_STATUS_TABLE_SWITCHPORT
           . ' SET '
-          . $column_names{$DB_COL_STATUS_SWITCHPORT_ADMINSTATUS}
-          . ' = '
-          . $adminstatus
+          . $column_names{$DB_COL_STATUS_SWITCHPORT_ADMINSTATUS} . ' = ' . $adminstatus
           . ' WHERE '
-          . $column_names{$DB_COL_STATUS_SWITCHPORT_SWITCHPORTID}
-          . " = $id "
+          . $column_names{$DB_COL_STATUS_SWITCHPORT_SWITCHPORTID} . " = $id "
           ;
 
         if ( $self->sqldo($sql) ) {
@@ -1199,12 +1159,9 @@ sub update_switchport_mabenabled {
         my $sql = "UPDATE "
           . $DB_STATUS_TABLE_SWITCHPORT
           . ' SET '
-          . $column_names{$DB_COL_STATUS_SWITCHPORT_MABENABLED}
-          . ' = '
-          . $mabenabled
+          . $column_names{$DB_COL_STATUS_SWITCHPORT_MABENABLED} . ' = ' . $mabenabled
           . ' WHERE '
-          . $column_names{$DB_COL_STATUS_SWITCHPORT_SWITCHPORTID}
-          . " = $id "
+          . $column_names{$DB_COL_STATUS_SWITCHPORT_SWITCHPORTID} . " = $id "
           ;
 
         if ( $self->sqldo($sql) ) {
@@ -1234,12 +1191,9 @@ sub update_switchport_mabauthmethod {
         my $sql = "UPDATE "
           . $DB_STATUS_TABLE_SWITCHPORT
           . ' SET '
-          . $column_names{$DB_COL_STATUS_SWITCHPORT_MABAUTHMETHOD}
-          . ' = '
-          . $mabauthmethod
+          . $column_names{$DB_COL_STATUS_SWITCHPORT_MABAUTHMETHOD} . ' = ' . $mabauthmethod
           . ' WHERE '
-          . $column_names{$DB_COL_STATUS_SWITCHPORT_SWITCHPORTID}
-          . " = $id "
+          . $column_names{$DB_COL_STATUS_SWITCHPORT_SWITCHPORTID} . " = $id "
           ;
 
         if ( $self->sqldo($sql) ) {
@@ -1269,12 +1223,9 @@ sub update_switchport_mabstate {
         my $sql = "UPDATE "
           . $DB_STATUS_TABLE_SWITCHPORT
           . ' SET '
-          . $column_names{$DB_COL_STATUS_SWITCHPORT_MABSTATE}
-          . ' = '
-          . $mabstate
+          . $column_names{$DB_COL_STATUS_SWITCHPORT_MABSTATE} . ' = ' . $mabstate
           . ' WHERE '
-          . $column_names{$DB_COL_STATUS_SWITCHPORT_SWITCHPORTID}
-          . " = $id "
+          . $column_names{$DB_COL_STATUS_SWITCHPORT_SWITCHPORTID} . " = $id "
           ;
 
         if ( $self->sqldo($sql) ) {
@@ -1304,12 +1255,9 @@ sub update_switchport_mabauth {
         my $sql = "UPDATE "
           . $DB_STATUS_TABLE_SWITCHPORT
           . ' SET '
-          . $column_names{$DB_COL_STATUS_SWITCHPORT_MABAUTH}
-          . ' = '
-          . $mabauth
+          . $column_names{$DB_COL_STATUS_SWITCHPORT_MABAUTH} . ' = ' . $mabauth
           . ' WHERE '
-          . $column_names{$DB_COL_STATUS_SWITCHPORT_SWITCHPORTID}
-          . " = $id "
+          . $column_names{$DB_COL_STATUS_SWITCHPORT_SWITCHPORTID} . " = $id "
           ;
 
         if ( $self->sqldo($sql) ) {

@@ -1,0 +1,94 @@
+#!/bin/sh
+#
+
+[ -z "${RADIUSD}" ] && RADIUSD=/usr/bin/radiusd
+[ -z "${RADIATOR_CONFIG}" ] && RADIATOR_CONFIG=$HOME/nac/etc/radiator.cfg
+[ -z "${RADIATOR_ARGS}" ] && RADIATOR_ARGS=""
+[ -z "${RADIUSD_ARGS}" ] && RADIUSD_ARGS="-config_file $RADIATOR_CONFIG -daemon $RADIATOR_ARGS"
+
+# Source 'em up
+if [ -f /etc/init.d/functions ]; then
+# LSB, RedHat, Mandrake etc:
+. /etc/init.d/functions
+STARTPROC="daemon $RADIUSD $RADIUSD_ARGS"
+CHECKPROC="status radiusd"
+KILLPROC="killproc radiusd"
+elif  [ -x /sbin/start-stop-daemon ]; then
+# Debian
+STARTPROC="/sbin/start-stop-daemon --start --pidfile $HOME/nac/var/radiusd.pid --exec $RADIUSD -- $RADIUSD_ARGS"
+CHECKPROC=
+KILLPROC="/sbin/start-stop-daemon --stop --pidfile $HOME/nac/var/radiusd.pid"
+elif [ -x /sbin/startproc ]; then
+# SuSE etc
+STARTPROC="/sbin/startproc $RADIUSD $RADIUSD_ARGS"
+CHECKPROC=
+KILLPROC="killproc radiusd"
+else
+# No daemon starter; Slackware?
+STARTPROC="$RADIUSD $RADIUSD_ARGS"
+CHECKPROC=
+KILLPROC="killproc radiusd"
+fi
+
+
+# Source additional OPTIONS if we have them.
+if [ -f /etc/sysconfig/radiator ] ; then
+	. /etc/sysconfig/radiator
+fi
+
+if [ ! -x $RADIUSD ]; then
+	echo No radiusd found, Exiting...
+	exit 0
+fi
+
+start() {
+    # don't do squat if we don't have the config file
+    if [ -f $RADIATOR_CONFIG ]; then
+	echo cd $HOME/nac/lib
+	cd $HOME/nac/lib
+	echo -n "Starting Radiator: "
+	$STARTPROC
+	RETVAL=$?
+	echo
+    else
+	echo Unable to find config file $RADIATOR_CONFIG!
+    fi
+    return $RETVAL
+}
+
+stop() {
+    echo -n "Shutting down Radiator: "
+    $KILLPROC
+    RETVAL=$?
+    echo
+    return $RETVAL
+}
+
+getstatus() {
+        $CHECKPROC
+}
+case "$1" in
+  start)
+       start
+    ;;
+  stop)
+       stop
+    ;;
+  restart|reload)
+        stop
+        start
+	RETVAL=$?
+    ;;
+  status)
+	getstatus
+	RETVAL=$?
+    ;;
+
+  *)
+	echo "Usage: $0 {start|stop|restart|status}"
+	exit 1
+esac
+
+exit $RETVAL
+
+

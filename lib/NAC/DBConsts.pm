@@ -253,6 +253,7 @@ Readonly our $DB_COL_MAC_DESC                         => 'MAC-DESC';
 Readonly our $DB_COL_MAC_AT                           => 'MAC-ASSET-TAG';
 Readonly our $DB_COL_MAC_ACT                          => 'MAC-ACTIVE';
 Readonly our $DB_COL_MAC_COE                          => 'MAC-COE';
+Readonly our $DB_COL_MAC_THINCLIENT                   => 'MAC-THINCLIENT';
 Readonly our $DB_COL_MAC_LOCKED                       => 'MAC-LOCKED';
 Readonly our $DB_COL_MAC_COM                          => 'MAC-COMMENT';
 Readonly our $DB_SORT_MAC_ID                          => 'MAC-SORT-ID';
@@ -571,6 +572,7 @@ Readonly our %column_names => (
     $DB_COL_MAC_AT                           => 'assettag',
     $DB_COL_MAC_ACT                          => 'active',
     $DB_COL_MAC_COE                          => 'coe',
+    $DB_COL_MAC_THINCLIENT                   => 'thinclient',
     $DB_COL_MAC_LOCKED                       => 'locked',
     $DB_COL_MAC_COM                          => 'comment',
     $DB_COL_MAGIC_ID                         => 'magicportid',
@@ -1014,6 +1016,7 @@ our @EXPORT = qw (
   $DB_COL_MAC_AT
   $DB_COL_MAC_ACT
   $DB_COL_MAC_COE
+  $DB_COL_MAC_THINCLIENT
   $DB_COL_MAC_LOCKED
   $DB_COL_MAC_COM
   $DB_COL_MAC_LSC

@@ -2,14 +2,22 @@
 
 package NAC::DataRequest::SQL;
 
+use base qw ( Exporter );
 use FindBin;
 use lib "$FindBin::Bin/../..";
 use strict;
 
+use constant SQL_FUNCTION => 'nac_sql_function';
+
+our @EXPORT = qw(
+  SQL_FUNCTION
+);
+
 our @ISA = qw(NAC::DataRequest);
 
 sub new {
-    my $self = $class->SUPER::new();
+    my ( $class, $parms ) = @_;
+    my $self = $class->SUPER::new($parms);
     bless $self, $class;
     $self;
 }

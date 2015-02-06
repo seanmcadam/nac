@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+
+
+
+use FindBin;
+use lib "$FindBin::Bin/..";
+use NAC::Worker::Thread;
+use strict;
+
+use constant LOCAL_DB_THREAD_COUNT => 10;
+
+my $thread = NAC::Worker::Thread->new();
+
+for my $i ( 1 .. LOCAL_DB_THREAD_COUNT ) {
+ $thread->create( sub{ NAC::Worker::LocalDB->add_worker( 'NAC::Worker::LocalDB' ) } );
+}
+
+$thread->run();
+

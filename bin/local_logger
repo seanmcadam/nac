@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+
+
+use Data::Dumper;
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+use NAC::Worker::Thread;
+use NAC::Worker::LocalLogger;
+use strict;
+
+use constant LOCAL_LOGGER_THREAD_COUNT => 10;
+
+my $thread = NAC::Worker::Thread->new();
+for my $i ( 1 .. LOCAL_LOGGER_THREAD_COUNT ) {
+  $thread->create( \&NAC::Worker::LocalLogger::new );
+}
+$thread->run();
+
+

@@ -1,18 +1,13 @@
 #!/usr/bin/perl
 
-package NAC::DataResponse::SQL;
+package NAC::DataResponse::GetLocalSQL;
 
 use FindBin;
 use lib "$FindBin::Bin/../..";
+use NAC::DataResponse::SQL;
 use strict;
 
-use constant GET_SQL_FUNCTION => 'get_sql';
-
-our @EXPORT = qw(
-  GET_SQL_FUNCTION
-);
-
-our @ISA = qw(NAC::DataResponse);
+our @ISA = qw(NAC::DataResponse::SQL);
 
 sub new {
 my ($class,$parms) = @_;

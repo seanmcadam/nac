@@ -7,38 +7,61 @@ package NAC::Worker::Thread;
 use base qw( Exporter );
 use FindBin;
 use lib "$FindBin::Bin/../..";
-# use NAC::Worker::HTTP;
-# use NAC::Worker::LocalCMPAuth;
-# use NAC::Worker::LocalConfig;
-use NAC::Worker::LocalDB;
-# use NAC::Worker::LocalGateway;
-# use NAC::Worker::LocalLogger;
-# use NAC::Worker::Logger;
-# use NAC::Worker::Master;
-# use NAC::Worker::SNMP;
 use threads;
 use strict;
 use 5.010;
 
-use constatnt TID => 'TID';
+my $logger = undef;
 
+
+use constant THREAD_PARM_NOLOG       => 'THREAD_PARM_NOLOG';
+use constant TID => 'TID';
+
+our @EXPORT = qw(
+);
+
+
+# ------------------------------------------------
+#
+# ------------------------------------------------
 sub new {
-    my ($class) = @_;
+    my ($class,$parms) = @_;
     my $self = {};
-    my $self->{TID} = {};
+    $self->{TID} = {};
+
     bless $self, $class;
     $self;
 }
 
-sub add_worker {
-    my ( $self, $worker_name, $parms ) = @_;
+# ------------------------------------------------
+#
+# ------------------------------------------------
+sub create {
+    my ( $self, $worker_ref, $parms ) = @_;
 
-    my $thr = thread->create( sub { "$worker_name"->new($parms)->work() } );
+    # print "REF:" . ref($worker_ref) . "\n";
 
+    my $thr = threads->create( sub { 
+	$worker_ref->($parms)->work() 
+	} );
+
+    $self->{TID}->{ $thr->tid } = $thr;
+}
+
+# ------------------------------------------------
+# ------------------------------------------------
+#
+# ------------------------------------------------
+sub create_localdb {
+    my ( $self, $parms ) = @_;
+    my $thr = threads->create( sub { NAC::Worker::LocalDB->new($parms)->work() } );
     $self->{TID}->{ $thr->tid } = $thr;
 
 }
 
+# ------------------------------------------------
+#
+# ------------------------------------------------
 sub run {
     my ($self) = @_;
 

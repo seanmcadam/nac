@@ -7,9 +7,12 @@ use FindBin;
 use lib "$FindBin::Bin/../../..";
 use NAC::DataRequest::GetLocalSQL;
 use NAC::DataResponse::GetLocalSQL;
+use NAC::Worker::Function;
 use strict;
 
 our @ISA = qw(NAC::Worker::Function);
+
+use constant GET_LOCAL_SQL_FUNCTION => 'get_local_sql';
 
 sub new {
     my ( $class, $parms ) = @_;
@@ -27,6 +30,9 @@ sub function {
 
     if( ref($request) ne 'NAC::DataRequest::GetLocalSQL' ) { confess; }
 
+#
+# Parse SQL and make DB Request
+#
 
 $response;
 

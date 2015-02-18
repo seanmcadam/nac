@@ -21,6 +21,8 @@ use constant '_SQL_TYPE_INSERT'    => 'INSERT';
 use constant '_SQL_TYPE_UPDATE'    => 'UPDATE';
 use constant '_SQL_TYPE_DELETE'    => 'DELETE';
 use constant '_SQL_PARM_COLUMNS'   => '-columns';
+use constant '_SQL_PARM_COUNT'     => '-count';
+use constant '_SQL_PARM_DISTINCT'  => '-distinct';
 use constant '_SQL_PARM_EXCEPT'    => '-except';
 use constant '_SQL_PARM_FROM'      => '-from';
 use constant '_SQL_PARM_INTERSECT' => '-intersect';
@@ -32,6 +34,8 @@ use constant '_SQL_PARM_UNION'     => '-union';
 use constant '_SQL_PARM_UNION_ALL' => '-union_all';
 use constant '_SQL_PARM_WHERE'     => '-where';
 use constant 'SQL_PARM_COLUMNS'    => 'SQL_PARM_COLUMNS';
+use constant 'SQL_PARM_COUNT'      => 'SQL_PARM_COUNT';
+use constant 'SQL_PARM_DISTINCT'   => 'SQL_PARM_DISTINCT';
 use constant 'SQL_PARM_EXCEPT'     => 'SQL_PARM_EXCEPT';
 use constant 'SQL_PARM_FROM'       => 'SQL_PARM_FROM';
 use constant 'SQL_PARM_INTERSECT'  => 'SQL_PARM_INTERSECT';
@@ -39,15 +43,18 @@ use constant 'SQL_PARM_JOIN'       => 'SQL_PARM_JOIN';
 use constant 'SQL_PARM_LIMIT'      => 'SQL_PARM_LIMIT';
 use constant 'SQL_PARM_MINUS'      => 'SQL_PARM_MINUS';
 use constant 'SQL_PARM_OFFSET'     => 'SQL_PARM_OFFSET';
+use constant 'SQL_PARM_SELECT'     => 'SQL_PARM_SELECT';
 use constant 'SQL_PARM_UNION'      => 'SQL_PARM_UNION';
 use constant 'SQL_PARM_UNION_ALL'  => 'SQL_PARM_UNION_ALL';
 use constant 'SQL_PARM_WHERE'      => 'SQL_PARM_WHERE';
-use constant 'SQL_ALIAS_DELIM'     => '|';
 use constant 'SQL_OP_PLUS'         => 'SQL_OP_PLUS';
 use constant 'SQL_OP_MINUS'        => 'SQL_OP_MINUS';
 use constant 'SQL_OP_MULT'         => 'SQL_OP_MULT';
 use constant 'SQL_OP_DIV'          => 'SQL_OP_DIV';
+use constant 'SQL_OP_MOD'          => 'SQL_OP_MOD';
+use constant 'SQL_OP_EQUAL'        => 'SQL_OP_EQUAL';
 use constant 'SQL_EMPTY_STRING'    => 'SQL_EMPTY_STRING';
+use constant 'SQL_ALIAS_DELIM'     => '|';
 
 use constant SQL_FUNCTION => 'nac_sql_function';
 
@@ -57,17 +64,23 @@ my @export = qw(
   SQL_FUNCTION
   SQL_ALIAS_DELIM
   SQL_PARM_COLUMNS
+  SQL_PARM_COUNT
+  SQL_PARM_DISTINCT
+  SQL_PARM_EXCEPT
   SQL_PARM_FROM
   SQL_PARM_INTERSECT
   SQL_PARM_JOIN
   SQL_PARM_LIMIT
   SQL_PARM_OFFSET
+  SQL_PARM_SELECT
   SQL_PARM_UNION
   SQL_PARM_WHERE
   SQL_OP_PLUS
   SQL_OP_MINUS
   SQL_OP_MULT
   SQL_OP_DIV
+  SQL_OP_MOD
+  SQL_OP_EQUAL
   SQL_EMPTY_STRING
 );
 
@@ -78,6 +91,8 @@ my %ops = (
     SQL_OP_MINUS => ' - ',
     SQL_OP_MULT  => ' * ',
     SQL_OP_DIV   => ' / ',
+    SQL_OP_MOD   => ' % ',
+    SQL_OP_EQUAL => ' = ',
 );
 
 my %check_functions = (
@@ -110,6 +125,7 @@ my %parm_functions = (
 
 my %parm_to_args = (
     SQL_PARM_COLUMNS   => _SQL_PARM_COLUMNS,
+    SQL_PARM_COUNT     => _SQL_PARM_COUNT,
     SQL_PARM_EXCEPT    => _SQL_PARM_EXCEPT,
     SQL_PARM_FROM      => _SQL_PARM_FROM,
     SQL_PARM_INTERSECT => _SQL_PARM_INTERSECT,
@@ -187,9 +203,6 @@ sub prepare_select_args {
         confess "Limit and Offset required " . Dumper @_;
     }
 
-    # print Dumper \$self;
-    # print Dumper \@args;
-
     return \@args;
 }
 
@@ -199,12 +212,12 @@ sub prepare_select_args {
 #	Fixed Value
 #	$COL_NAME
 #	[$COL_NAME, OP, VALUE,]
+#	[$COL_NAME, OP, [$COL_NAME, OP, VALUE],]
 #	{ $COL_NAME => ALIAS }
 #	{ [$COL_NAME, OP, VALUE,] => ALIAS }
 #	[ $COL_NAME, $COL_NAME,... ]
 #	[ $COL_NAME, { $COL_NAME => ALIAS },... ]
 #	[ $COL_NAME, { [$COL_NAME, OP, VALUE,] => ALIAS },... ]
-
 # ----------------------------------------------------------------
 sub columns {
     my ( $self, $parm ) = @_;
@@ -248,7 +261,7 @@ sub columns_scalar {
     elsif ( isdigit($col) ) {
         $ret = $col;
     }
-    elsif ( $col =~ /^[\w\-]+$/ ) {
+    elsif ( $col =~ /^[\w\-\s]+$/ ) {
         $ret = '"' . $col . '"';
     }
     else {
@@ -267,18 +280,19 @@ sub columns_array {
     #
     # FOR  { xxxx => [ 400, SQL_OP_PLUS, NACAUDIT_VLANGROUP2VLAN_PRIORITY_COLUMN ] },
     #
-    if ( ( 3 == scalar(@$arr) ) && ( _verify_op_name( $arr->[1] ) ) ) {
+    if ( SQL_PARM_COUNT eq $arr->[0] ) {
+	shift( @$arr );
+	$array = [ $parm_to_args{SQL_PARM_COUNT} => @{$self->columns_array( $arr )} ];
+	}
+    elsif ( ( 3 == scalar(@$arr) ) && ( _verify_op_name( $arr->[1] ) ) ) {
         my $a = $self->columns_scalar( $arr->[0] );
         my $b = _get_op_name( $arr->[1] );
         my $c;
         if ( 'ARRAY' eq ref( $arr->[2] ) ) {
             $c = $self->columns_array( $arr->[2] )->[0];
-            carp "COLUMNS ARRAY:" . Dumper $arr;
-
         }
         else {
             $c = $self->columns_scalar( $arr->[2] );
-            carp "COLUMNS SCALAR:" . Dumper \$c;
         }
         push( @$array, '( ' . join( ' ', $a, $b, $c, ) . ' )' );
 
@@ -288,8 +302,6 @@ sub columns_array {
             push( @$array, @{ $self->columns($a) } );
         }
     }
-
-    print Dumper $array;
 
     $array;
 }
@@ -414,13 +426,32 @@ sub where {
     my ( $self, $parm ) = @_;
     my %where;
     if ( 'HASH' eq ref($parm) ) {
-        $check_functions{SQL_PARM_WHERE}->($parm);
+
+        # $check_functions{SQL_PARM_WHERE}->($parm);
 
         foreach my $k ( keys(%$parm) ) {
             my $v = $parm->{$k};
+
             if ( verify_column_name($k) ) {
                 $k = get_column_dbname($k);
             }
+            elsif ( SQL_PARM_SELECT eq $k ) {
+                if ( 'ARRAY' eq ref($v) ) {
+                    my $a = $self->columns_scalar( $v->[0] );
+                    my $b = _get_op_name( $v->[1] );
+                    my ( $sql, @bind ) = $self->select( $v->[2] );
+
+                    $where{$a} = "$b $sql";
+                }
+                else {
+                    confess "WHERE SUBQUERY FAILED:" . Dumper $parm;
+                }
+
+            }
+            else {
+                confess "WHERE FAILED:" . Dumper $parm;
+            }
+
             if ( 'SCALAR' eq ref $v ) {
                 my $ref = "= " . ( isdigit($$v) ? $$v : '"' . $$v . '"' );
                 $where{$k} = \$ref;
@@ -438,6 +469,8 @@ sub where {
     else {
         confess Dumper @_;
     }
+
+                    print ">>> WHERE:" . Dumper \%where;
 
     \%where;
 }
@@ -557,8 +590,8 @@ sub _check_where {
         confess Dumper @_;
     }
     foreach my $col_name ( keys(%$parm) ) {
-        if ( !verify_column_name($col_name) ) {
-            confess "Column Name: $col_name " . Dumper @_;
+        if ( ( 'HASH' ne ref($col_name) ) && ( !verify_column_name($col_name) ) ) {
+            confess "Column Name: '$col_name' " . Dumper @_;
         }
     }
 }

@@ -4,11 +4,16 @@ package NAC::Worker::Function::LocalLogger;
 
 use Data::Dumper;
 use Carp;
+use base qw ( Exporter );
 use FindBin;
 use lib "$FindBin::Bin/../../..";
 use NAC::DataRequest::LocalLogger;
 use NAC::Worker::Function;
 use strict;
+
+our @EXPORT = qw(
+  EVENT_START
+);
 
 our @ISA = qw(NAC::Worker::Function);
 
@@ -25,7 +30,6 @@ sub new {
 sub function {
     my ($request) = @_;
 
-
     if( ref($request) ne 'NAC::DataRequest::LocalLogger' ) { 
 	confess; 
 	}
@@ -35,17 +39,19 @@ print "$time:";
 print $request->level();
 print ":";
 print $request->event();
-print " EVENT:";
+print "\nEVENT: ";
 print $request->hostname();
-print " PACK:";
+print "\nPROGRAM: ";
 print $request->package();
-print " SUB:";
+print "\nPACK: ";
+print $request->package();
+print "\nSUB: ";
 print $request->subroutine();
-print " FILE:";
+print "\nFILE: ";
 print $request->file();
-print " LINE:";
+print " LINE: ";
 print $request->line();
-print "\n\tMESSAGE:";
+print "\nMESSAGE:";
 print $request->message();
 print "\n";
 

@@ -10,10 +10,10 @@ package NAC::Worker;
 use Data::Dumper;
 use Carp;
 use base qw( Exporter );
-use FindBin;
-use lib "$FindBin::Bin/..";
 use Gearman::XS qw(:constants);
 use Gearman::XS::Worker;
+use FindBin;
+use lib "$FindBin::Bin/..";
 use NAC::LocalLogger;
 use strict;
 use 5.010;
@@ -101,7 +101,7 @@ sub new {
 
     bless $self, $class;
 
-    $NAC::LOG_DEBUG_0->( 'EVENT_START_TEMP', " starting up WORKER " );
+    $NAC::LOG_DEBUG_5->( EVENT_START, " STARTING WORKER " );
 
     $self;
 }

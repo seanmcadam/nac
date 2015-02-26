@@ -8,7 +8,8 @@ use NAC::Worker::Thread;
 use NAC::Worker::LocalDB;
 use strict;
 
-use constant LOCAL_DB_THREAD_COUNT => 10;
+# use constant LOCAL_DB_THREAD_COUNT => 10;
+use constant LOCAL_DB_THREAD_COUNT => 1;
 
 my $thread = NAC::Worker::Thread->new();
 for my $i ( 1 .. LOCAL_DB_THREAD_COUNT ) {

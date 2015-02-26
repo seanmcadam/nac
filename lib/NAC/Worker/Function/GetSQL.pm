@@ -29,7 +29,7 @@ sub function {
 
     if ( ref($request) ne 'NAC::DataRequest::SQL' ) { confess; }
 
-    my $response = NAC::DataResponse::SQL->new();
+    my $response = NAC::DataResponse::SQL->new( );
 
     $response;
 

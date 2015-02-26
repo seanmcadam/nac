@@ -8,7 +8,6 @@ use lib "$FindBin::Bin/../..";
 use NAC::DataRequest;
 use strict;
 
-use constant EVENT_START    => 'EVENT_START';
 
 use constant LOG_PARM_LEVEL    => 'LOG_PARM_LEVEL';
 use constant LOG_PARM_EVENT    => 'LOG_PARM_EVENT';
@@ -38,7 +37,9 @@ use constant LOG_DEBUG_LEVEL_7 => 'DEBUG_LEVEL_7';       # Heavy Debug
 use constant LOG_DEBUG_LEVEL_8 => 'DEBUG_LEVEL_8';       # Painful Debug
 use constant LOG_DEBUG_LEVEL_9 => 'DEBUG_LEVEL_9';       # So Very Painful Debug
 
-use constant LOG_DEFAULT_LEVEL => LOG_LEVEL_DEBUG;
+use constant EVENT_START => 'EVENT_START';
+
+use constant LOG_DEFAULT_LEVEL       => LOG_LEVEL_DEBUG;
 use constant LOG_DEFAULT_DEBUG_LEVEL => LOG_DEBUG_LEVEL_9;
 
 our %logging_level = (
@@ -113,16 +114,18 @@ sub new {
     my $file        = $parms->{LOG_PARM_FILE};
     my $line        = $parms->{LOG_PARM_LINE};
 
-    my $self = $class->SUPER::new();
-    $self->{LOG_LEVEL}       = $level;
-    $self->{LOG_DEBUG_LEVEL} = $debug_level;
-    $self->{LOG_EVENT}       = $event;
-    $self->{LOG_MESSAGE}     = $message;
-    $self->{LOG_HOSTNAME}    = $hostname;
-    $self->{LOG_PROGRAM}     = $program;
-    $self->{LOG_PACKAGE}     = $package;
-    $self->{LOG_FILE}        = $file;
-    $self->{LOG_LINE}        = $line;
+    my $data                 = {};
+    $data->{LOG_LEVEL}       = $level;
+    $data->{LOG_DEBUG_LEVEL} = $debug_level;
+    $data->{LOG_EVENT}       = $event;
+    $data->{LOG_MESSAGE}     = $message;
+    $data->{LOG_HOSTNAME}    = $hostname;
+    $data->{LOG_PROGRAM}     = $program;
+    $data->{LOG_PACKAGE}     = $package;
+    $data->{LOG_FILE}        = $file;
+    $data->{LOG_LINE}        = $line;
+
+    my $self = $class->SUPER::new( $class, $data );
     bless $self, $class;
     $self;
 }
@@ -130,62 +133,61 @@ sub new {
 # ----------------------------------
 sub level {
     my ($self) = @_;
-    $self->{LOG_LEVEL};
+    $self->data->{LOG_LEVEL};
 }
 
 # ----------------------------------
 sub debug_level {
     my ($self) = @_;
-    $self->{LOG_DEBUG_LEVEL};
+    $self->data->{LOG_DEBUG_LEVEL};
 }
 
 # ----------------------------------
 sub event {
     my ($self) = @_;
-    $self->{LOG_EVENT};
+    $self->data->{LOG_EVENT};
 }
 
 # ----------------------------------
 sub message {
     my ($self) = @_;
-    $self->{LOG_EVENT};
+    $self->data->{LOG_EVENT};
 }
 
 # ----------------------------------
 sub hostname {
     my ($self) = @_;
-    $self->{LOG_HOSTNAME};
+    $self->data->{LOG_HOSTNAME};
 }
 
 # ----------------------------------
 sub program {
     my ($self) = @_;
-    $self->{LOG_PROGRAM};
+    $self->data->{LOG_PROGRAM};
 }
 
 # ----------------------------------
 sub package {
     my ($self) = @_;
-    $self->{LOG_PACKAGE};
+    $self->data->{LOG_PACKAGE};
 }
 
 # ----------------------------------
 sub subroutine {
     my ($self) = @_;
-    $self->{LOG_SUBROUTINE};
+    $self->data->{LOG_SUBROUTINE};
 }
 
 # ----------------------------------
 sub file {
     my ($self) = @_;
-    $self->{LOG_FILE};
+    $self->data->{LOG_FILE};
 }
 
 # ----------------------------------
 sub line {
     my ($self) = @_;
-    $self->{LOG_LINE};
+    $self->data->{LOG_LINE};
 }
-
 
 1;

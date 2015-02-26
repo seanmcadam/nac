@@ -13,6 +13,7 @@ use Gearman::Task;
 use Storable qw ( freeze thaw );
 use FindBin;
 use lib "$FindBin::Bin/../..";
+use NAC::DataRequest;
 use NAC::LocalLogger;
 use strict;
 
@@ -28,8 +29,12 @@ sub new {
     my $self = {};
     $self->{FUNCTION_NAME} = $func_name;
     $self->{FUNCTION_REF}  = sub {
-        my $arg = thaw( $_[0]->workload() );
-        my $ret = $func_ref->($arg);
+        my $json = thaw( $_[0]->workload() );
+
+        my $data = NAC::DataRequest->new();
+        $data->set_json($json);
+
+        my $ret = $func_ref->( $data->set_json($json) );
         if ( ref($ret) ) {
             return freeze($ret);
         }

@@ -97,8 +97,6 @@ if ( !$port ) {
     $port = 3306;
 }
 
-#  nacconfig nacaudit nacbuffer nacconfig naceventlog nacradiusaudit nacsessions nacstatus nacuser
-
 my @my_packages;
 
 my %my_schema_dbnames;
@@ -107,6 +105,10 @@ my %my_column_dbnames;
 my %my_schema_names;
 my %my_table_names;
 my %my_column_names;
+my %my_column_datatype;
+my %my_table_alias;
+my %my_column_alias;
+my %my_column_to_table;
 
 foreach my $a (@ARGV) {
     $my_schema_dbnames{$a} = 1;
@@ -236,11 +238,11 @@ use strict;
 $file .= gen_database_files();
 $file .= gen_db_file();
 
-    Perl::Tidy::perltidy(
-        source      => \$file,
-        destination => \$formatted_file,
-        argv        => " -l=0 -anl -fnl ",
-    );
+Perl::Tidy::perltidy(
+    source      => \$file,
+    destination => \$formatted_file,
+    argv        => " -l=0 -anl -fnl ",
+);
 
 print $formatted_file;
 
@@ -269,8 +271,8 @@ sub gen_database_files {
         $c_exports         .= "$schemadb\n";
         $constants_exports .= "$schemadb\n";
 
-	$my_schema_dbnames{ $schema } = $schema_name;
-	$my_schema_names{ $schema_name } = $schema;
+        $my_schema_dbnames{$schema}    = $schema_name;
+        $my_schema_names{$schema_name} = $schema;
 
         foreach my $table ( sort( keys(%$schema_table_ref) ) ) {
             my $tref       = $schema_table_ref->{$table};
@@ -282,13 +284,18 @@ sub gen_database_files {
 
             my $table_db_name = $tref->{$TABLE_NAME};
             my $tabledb       = $table_name . "_DBNAME";
+            my $tablealias    = $table_name . "_ALIAS";
             $c_all             .= "use constant '" . $tabledb . "' => '$schema.$table';\n";
+            $c_all             .= "use constant '" . $tablealias . "' => '$schema" . '_' . "$table';\n";
             $c_exports         .= "$tabledb\n";
+            $c_exports         .= "$tablealias\n";
             $constants_exports .= "$tabledb\n";
+            $constants_exports .= "$tablealias\n";
             $tref->{$TABLE_DB_NAME} = $schema . '.' . $table_db_name;
 
-	    $my_table_dbnames{ $schema . '.' . $table } = $table_name;
-	    $my_table_names{ $table_name } = $schema . '.' . $table;
+            $my_table_dbnames{ $schema . '.' . $table } = $table_name;
+            $my_table_names{$table_name}                = $schema . '.' . $table;
+            $my_table_alias{$table_name}                = $schema . '_' . $table;
 
             my $primary_key_count       = 0;
             my $primary_key_name        = '';
@@ -302,7 +309,7 @@ sub gen_database_files {
                 $constants_exports .= "$column_name\n";
 
                 my $dref      = $cref->{$COLUMN_DATA};
-                my $data_type = $cref->{$DATA_TYPE};
+                my $data_type = $dref->{$DATA_TYPE};
                 my $data      = $column_name . "_DATATYPE";
                 $c_all             .= "use constant '" . $data . "' => '$data';\n";
                 $c_exports         .= "$data\n";
@@ -315,8 +322,12 @@ sub gen_database_files {
                 $constants_exports .= "$coldb\n";
                 $dref->{$COLUMN_DB_NAME} = $schema . '.' . $table_db_name . '.' . $column_db_name;
 
-	    $my_column_dbnames{ $schema . '.' . $table . '.' . $column } = $column_name;
-	    $my_column_names{ $column_name } = $schema . '.' . $table . '.' . $column;
+                my $stc = $schema . '.' . $table . '.' . $column;
+                $my_column_dbnames{$stc}          = $column_name;
+                $my_column_names{$column_name}    = $stc;
+                $my_column_alias{$column_name}    = '"' . $schema . '_' . $table . '.' . $column . '"';
+                $my_column_datatype{$column_name} = '"' . $data_type . '"';
+                $my_column_to_table{$column_name} = $table_name;
 
                 #
                 # enum(\'EVENT_START\',\'EVENT_STOP\'...
@@ -363,7 +374,7 @@ $c_all
 EODBPACKAGE
 
     }
-$ret;
+    $ret;
 }
 
 #
@@ -377,43 +388,81 @@ sub gen_db_file {
 EODBS
       ;
 
-$ret .= "my %schema_dbnames = ( \n";
-foreach my $s (sort(keys(%my_schema_dbnames))) {
-	$ret .= '"' . $s . '" => ' . $my_schema_dbnames{$s} . ",\n";
-}
-$ret .= ");\n";
+    $ret .= "my %schema_dbnames = ( \n";
+    foreach my $s ( sort( keys(%my_schema_dbnames) ) ) {
+        $ret .= '"' . $s . '" => ' . $my_schema_dbnames{$s} . ",\n";
+    }
+    $ret .= ");\n";
 
-$ret .= "my %table_dbnames = ( \n";
-foreach my $t (sort(keys(%my_table_dbnames))) {
-	$ret .= '"' . $t . '" => ' . $my_table_dbnames{$t} . ",\n";
-}
-$ret .= ");\n";
+    $ret .= "my %table_dbnames = ( \n";
+    foreach my $t ( sort( keys(%my_table_dbnames) ) ) {
+        $ret .= '"' . $t . '" => ' . $my_table_dbnames{$t} . ",\n";
+    }
+    $ret .= ");\n";
 
-$ret .= "my %column_dbnames = ( \n";
-foreach my $c (sort(keys(%my_column_dbnames))) {
-	$ret .= '"' . $c . '" => ' . $my_column_dbnames{$c} . ",\n";
-}
-$ret .= ");\n";
+    $ret .= "my %table_alias = ( \n";
+    foreach my $t ( sort( keys(%my_table_alias) ) ) {
 
-$ret .= "my %schema_names = ( \n";
-foreach my $s (sort(keys(%my_schema_names))) {
-	$ret .= $s . ' => "' . $my_schema_names{$s} . '"' . ",\n";
-}
-$ret .= ");\n";
+        # $ret .= '"' . $t . '" => "' . $my_table_alias{$t} . '"' . ",\n";
+        $ret .= $t . ' => "' . $my_table_alias{$t} . '"' . ",\n";
+    }
+    $ret .= ");\n";
 
-$ret .= "my %table_names = ( \n";
-foreach my $t (sort(keys(%my_table_names))) {
-	$ret .= $t . ' => "' . $my_table_names{$t} . '"' . ",\n";
-}
-$ret .= ");\n";
-$ret .= "my %column_names = ( \n";
-foreach my $c (sort(keys(%my_column_names))) {
-	$ret .= $c . ' => "' . $my_column_names{$c} . '"' . ",\n";
-}
-$ret .= ");\n";
+    $ret .= "my %column_dbnames = ( \n";
+    foreach my $c ( sort( keys(%my_column_dbnames) ) ) {
+        $ret .= '"' . $c . '" => ' . $my_column_dbnames{$c} . ",\n";
+    }
+    $ret .= ");\n";
 
+    $ret .= "my %column_alias = ( \n";
+    foreach my $c ( sort( keys(%my_column_alias) ) ) {
+
+        # $ret .= '"' . $c . '" => ' . $my_column_alias{$c} . ",\n";
+        $ret .= $c . ' => ' . $my_column_alias{$c} . ",\n";
+    }
+    $ret .= ");\n";
+
+    $ret .= "my %schema_names = ( \n";
+    foreach my $s ( sort( keys(%my_schema_names) ) ) {
+        $ret .= $s . ' => "' . $my_schema_names{$s} . '"' . ",\n";
+    }
+    $ret .= ");\n";
+
+    $ret .= "my %table_names = ( \n";
+    foreach my $t ( sort( keys(%my_table_names) ) ) {
+        $ret .= $t . ' => "' . $my_table_names{$t} . '"' . ",\n";
+    }
+    $ret .= ");\n";
+
+    $ret .= "my %column_names = ( \n";
+    foreach my $c ( sort( keys(%my_column_names) ) ) {
+        $ret .= $c . ' => "' . $my_column_names{$c} . '"' . ",\n";
+    }
+    $ret .= ");\n";
+
+    $ret .= "my %column_datatype = ( \n";
+    foreach my $c ( sort( keys(%my_column_names) ) ) {
+        $ret .= $c . ' => ' . $my_column_datatype{$c} . ",\n";
+    }
+    $ret .= ");\n";
+
+    $ret .= "my %column_to_table = ( \n";
+    foreach my $c ( sort( keys(%my_column_to_table) ) ) {
+        $ret .= $c . ' => "' . $my_column_to_table{$c} . '"' . ",\n";
+    }
+    $ret .= ");\n";
 
     $ret .= << "EODBS1"
+
+my \%datatype_requires_quote = (
+    'char'      => 'char',
+    'datestamp' => 'datestamp',
+    'enum'      => 'enum',
+    'text'      => 'text',
+    'timestamp' => 'timestamp',
+    'varchar'   => 'varchar',
+);
+
 
 our \@EXPORT = qw(
 verify_db_name 
@@ -424,7 +473,11 @@ verify_table_dbname
 verify_column_dbname 
 get_db_dbname 
 get_table_dbname 
+get_table_alias 
 get_column_dbname 
+get_column_datatype 
+get_column_alias 
+get_column_table 
 $constants_exports);
 
 sub new {
@@ -441,6 +494,7 @@ sub verify_db_name {
 	}
 return 0;
 }
+
 sub verify_table_name {
     my (\$table) = \@_;
     if( defined \$table_names{\$table} ) {
@@ -448,6 +502,7 @@ sub verify_table_name {
 	}
 return 0;
 }
+
 sub verify_column_name {
     my (\$column) = \@_;
     if( defined \$column_names{\$column} ) {
@@ -455,6 +510,7 @@ sub verify_column_name {
 	}
 return 0;
 }
+
 sub verify_db_dbname {
     my (\$dbname) = \@_;
     if( defined \$schema_dbnames{\$dbname} ) {
@@ -462,6 +518,7 @@ sub verify_db_dbname {
 	}
 return 0;
 }
+
 sub verify_table_dbname {
     my (\$table) = \@_;
     if( defined \$table_dbnames{\$table} ) {
@@ -469,6 +526,7 @@ sub verify_table_dbname {
 	}
 return 0;
 }
+
 sub verify_column_dbname {
     my (\$column) = \@_;
     if( defined \$column_dbnames{\$column} ) {
@@ -476,20 +534,53 @@ sub verify_column_dbname {
 	}
 return 0;
 }
+
 sub get_db_dbname {
     my (\$db) = \@_;
     if( ! verify_schema_name(\$db) ) { confess Dumper \@_; }
     return \$schema_names{\$db};
 }
+
 sub get_table_dbname {
     my (\$table) = \@_;
     if( ! verify_table_name(\$table) ) { confess Dumper \@_; }
     return \$table_names{\$table};
 }
+
+sub get_table_alias {
+    my (\$table) = \@_;
+    if( ! verify_table_name(\$table) ) { confess Dumper \@_; }
+    return \$table_alias{\$table};
+}
+
 sub get_column_dbname {
     my (\$column) = \@_;
     if( ! verify_column_name(\$column) ) { confess Dumper \@_; }
     return \$column_names{\$column};
+}
+
+sub get_column_datatype {
+    my (\$column) = \@_;
+    if( ! verify_column_name(\$column) ) { confess Dumper \@_; }
+    return \$column_datatype{\$column};
+}
+
+sub quote_column_datatype {
+    my (\$column) = \@_;
+    if( ! verify_column_name(\$column) ) { confess Dumper \@_; }
+    return ( defined \$datatype_requires_quote{ \$column_datatype{\$column} }) ? 1 : 0;
+}
+
+sub get_column_alias {
+    my (\$column) = \@_;
+    if( ! verify_column_name(\$column) ) { confess Dumper \@_; }
+    return \$column_alias{\$column};
+}
+
+sub get_column_table {
+    my (\$column) = \@_;
+    if( ! verify_column_name(\$column) ) { confess Dumper \@_; }
+    return \$column_to_table{\$column};
 }
 
 1;

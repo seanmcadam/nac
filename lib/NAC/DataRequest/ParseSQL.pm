@@ -16,6 +16,8 @@ use NAC::Client::Logger;
 use NAC::DB;
 use strict;
 
+use constant 'NEWLINE' => "\n";
+
 use constant '_SQL_ABSTRACT'       => 'SQL_ABSTRACT';
 use constant '_SQL_TYPE'           => 'SQL_TYPE';
 use constant '_SQL_TYPE_SELECT'    => 'SELECT';
@@ -179,9 +181,13 @@ sub _get_op_name {
 sub select {
     my ( $self, $parm_ref ) = @_;
 
+    # print Dumper \@{ $self->prepare_select_args($parm_ref) };
+
     $self->{_SQL_ABSTRACT}->select( @{ $self->prepare_select_args($parm_ref) } );
 }
 
+# ----------------------------------------------------------------
+# Takes a hash with the various componants of the query string
 # ----------------------------------------------------------------
 sub prepare_select_args {
     my ( $self, $parm_ref ) = @_;
@@ -205,6 +211,8 @@ sub prepare_select_args {
     if ( defined $self->{SQL_PARM_LIMIT} xor defined $self->{SQL_PARM_OFFSET} ) {
         confess "Limit and Offset required " . Dumper @_;
     }
+
+# print Dumper \@args;
 
     return \@args;
 }
@@ -242,6 +250,8 @@ sub columns {
         confess Dumper @_;
     }
 
+# print Dumper $arrref;
+
     $arrref;
 }
 
@@ -253,7 +263,8 @@ sub columns_scalar {
     my $ret;
 
     if ( verify_column_name($col) ) {
-        $ret = get_column_dbname($col);
+        # $ret = get_column_dbname($col);
+        $ret = get_column_alias($col);
     }
     elsif ( _verify_op_name($col) ) {
         $ret = _get_op_name($col);
@@ -360,8 +371,10 @@ sub from {
 
     my $tabref = ();
     foreach my $tab (@$arrref) {
-        push( @$tabref, get_table_dbname($tab) );
+        push( @$tabref, get_table_dbname($tab) . " AS " . get_table_alias($tab) );
     }
+
+# print Dumper $tabref;
 
     $tabref;
 }
@@ -439,7 +452,8 @@ sub where {
             my $v = $parm->{$k};
 
             if ( verify_column_name($k) ) {
-                $k = get_column_dbname($k);
+                # $k = get_column_dbname($k);
+                $k = get_column_alias($k);
             }
             elsif ( SQL_PARM_SELECT eq $k ) {
                 if ( 'ARRAY' eq ref($v) ) {
@@ -463,7 +477,8 @@ sub where {
                 $where{$k} = \$ref;
             }
             elsif ( verify_column_name($v) ) {
-                $v = "= " . get_column_dbname($v);
+                # $v = "= " . get_column_dbname($v);
+                $v = "= " . get_column_alias($v);
                 $where{$k} = \$v;
             }
             else {
@@ -476,7 +491,7 @@ sub where {
         confess Dumper @_;
     }
 
-                    # print ">>> WHERE:" . Dumper \%where;
+# print Dumper \%where;
 
     \%where;
 }

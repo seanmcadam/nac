@@ -9,10 +9,15 @@ use FindBin;
 use lib "$FindBin::Bin/..";
 use NAC::Client::Logger;
 use strict;
+use 5.010;
 
-our @EXPORT = ( @NAC::Client::Logger::EXPORT );
+#
+# sets up Logging Client once
+#
 
-# print "LocalLogger EXPORTs:\n" . Dumper @NAC::Client::Logger::EXPORT;
+our $nac_local_logger = undef;
+
+our @EXPORT = @NAC::Client::Logger::EXPORT;
 
 our @ISA = qw(NAC::Client::Logger);
 
@@ -21,5 +26,9 @@ sub new {
     my $self = $class->SUPER::new($parms);
     bless $self, $class;
     $self;
+}
+
+if( ! defined $nac_local_logger ) {
+	$nac_local_logger = NAC::LocalLogger->new();
 }
 

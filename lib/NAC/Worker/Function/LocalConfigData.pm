@@ -1,25 +1,21 @@
 #!/usr/bin/perl
 
-package NAC::Worker::Function::GetLocalSQL;
+package NAC::Worker::Function::LocalConfigData;
 
-use Data::Dumper;
 use Carp;
-use DBI;
 use FindBin;
 use lib "$FindBin::Bin/../../..";
-use NAC::DataRequest::SQL;
-use NAC::DataResponse::GetLocalSQL;
 use NAC::Worker::Function;
 use NAC::Worker::DB;
+use NAC::DataRequest::Config;
+use NAC::DataResponse::Config;
 use strict;
 
 our @ISA = qw(NAC::Worker::Function);
 
-use constant GET_LOCAL_SQL_FUNCTION => 'get_local_sql';
-
 sub new {
     my ( $class, $parms ) = @_;
-    my $self = $class->SUPER::new( GET_LOCAL_SQL_FUNCTION, \&function );
+    my $self = $class->SUPER::new( GET_CONFIG_DATA_FUNCTION, \&function );
     bless $self, $class;
     $self;
 }
@@ -33,7 +29,7 @@ sub function {
 
     $LOGGER_DEBUG_9->();
 
-    if ( ref($request) ne 'NAC::DataRequest::SQL' ) { confess; }
+    if ( ref($request) ne 'NAC::DataRequest::Config' ) { confess; }
 
     my $sql = $request->sql;
     my $pid = $request->request_pid;
@@ -53,10 +49,10 @@ sub function {
     };
     if ($@) {
         $LOGGER_CRIT->( "STH EXECUTE ERROR STR: " . DBH()->errstr . "\nSQL: " . $sql );
-        $response = NAC::DataResponse::GetLocalSQL->new( { SQL_ERROR => DBH()->errstr, SQL_RESPONSE_NUM => $num, SQL_RESPONSE_PID => $pid, }, );
+        $response = NAC::DataResponse::Config->new( { SQL_ERROR => DBH()->errstr, SQL_RESPONSE_NUM => $num, SQL_RESPONSE_PID => $pid, }, );
     }
     else {
-        $response = NAC::DataResponse::GetLocalSQL->new( { SQL_SELECT => $sth->fetchrow_hashref, SQL_RESPONSE_NUM => $num, SQL_RESPONSE_PID => $pid, }, );
+        $response = NAC::DataResponse::Config->new( { SQL_SELECT => $sth->fetchrow_hashref, SQL_RESPONSE_NUM => $num, SQL_RESPONSE_PID => $pid, }, );
     }
 
     $response;

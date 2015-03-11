@@ -26,8 +26,6 @@ sub new {
     my $self = $class->SUPER::new($parms);
     $self->add_worker_function( NAC::Worker::Function::LocalLogger->new() );
 
-#    LOG_DEBUG( EVENT_START, "" );
-
     bless $self, $class;
     $self;
 }

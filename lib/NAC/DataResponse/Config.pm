@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-package NAC::DataResponse::GetConfig;
+package NAC::DataResponse::Config;
 
 use FindBin;
 use lib "$FindBin::Bin/../..";

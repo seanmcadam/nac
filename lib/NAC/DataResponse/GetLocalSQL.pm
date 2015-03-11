@@ -11,7 +11,7 @@ our @ISA = qw(NAC::DataResponse::SQL);
 
 sub new {
 my ($class,$parms) = @_;
-    my $self = $class->SUPER::new();
+    my $self = $class->SUPER::new( $parms );
     bless $self, $class;
     $self;
 }

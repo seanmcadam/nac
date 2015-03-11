@@ -39,6 +39,8 @@ sub new {
 }
 
 # ---------------------------------------------------------------------------
+# No Return
+# ---------------------------------------------------------------------------
 sub do_background {
     my ( $self, $function, $data_obj ) = @_;
     my ( $ret, $handle ) = $self->{CLIENT}->do_background( $function, freeze( $data_obj->get_json ) );
@@ -48,13 +50,15 @@ sub do_background {
 }
 
 # ---------------------------------------------------------------------------
+# Return Data
+# ---------------------------------------------------------------------------
 sub do {
     my ( $self, $function, $data_obj ) = @_;
     my ( $ret, $result ) = $self->{CLIENT}->do( $function, freeze( $data_obj->get_json ) );
     if ( $ret != GEARMAN_SUCCESS ) {
         carp "Failure sending to Server\n";
     }
-    return $result;
+    return thaw( $result );
 }
 
 # ---------------------------------------------------------------------------

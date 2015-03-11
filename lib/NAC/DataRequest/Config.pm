@@ -1,26 +1,30 @@
 #!/usr/bin/perl
 
-package NAC::DataRequest::GetConfigData;
+package NAC::DataRequest::Config;
 
+use Data::Dumper;
 use base qw( Exporter );
 use FindBin;
 use lib "$FindBin::Bin/../..";
-use NAC::DataRequest;
+use NAC::DataRequest::Get;
 use strict;
 
 use constant GET_CONFIG_DATA_FUNCTION => 'get_config_data';
 
-our @EXPORT = qw(
+our @export = qw(
   GET_CONFIG_DATA_FUNCTION
 );
 
-our @ISA = qw(NAC::DataRequest);
+our @EXPORT = ( @export, @NAC::DataRequest::Get::EXPORT );
+
+our @ISA = qw(NAC::DataRequest::Get);
 
 sub new {
     my ( $class, $parms ) = @_;
-    my $self = $class->SUPER::new();
+    my $self = $class->SUPER::new($parms);
     bless $self, $class;
     $self;
 }
 
 1;
+

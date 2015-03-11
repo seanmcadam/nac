@@ -5,19 +5,38 @@ package NAC::Worker::LocalConfig;
 use FindBin;
 use lib "$FindBin::Bin/../..";
 use NAC::Worker;
-use NAC::Worker::Function::GetConfigData;
+use NAC::Worker::DB;
+use NAC::Worker::Function::LocalConfigData;
 use strict;
 
-my %functions = ();
-
+our @ISA = qw(NAC::Worker);
 
 sub new {
 my ($class, $parms) = @_;
-my $config = NAC::Worker::Function::GetConfigData->new();
+$class = __PACKAGE__;
+    
+    if( ! defined $parms ) {
+	$parms = {};
+	$parms->{ WORKER_PARM_SERVER } = WORKER_SERVER_LOCALHOST; 
+	}
 
+    #
+    # Replace with Get Config
+    #
+    NAC::Worker::DB::dbh_init( { 
+	DB_SERVER => 'n02',
+	DB_PORT   => '3306',
+	DB_USER   => 'nacro',
+	DB_PASS   => 'nacro',
+	DB_NAME   => 'nacconfig',
+	} );
+
+    my $self = $class->SUPER::new( $parms );
+    $self->add_worker_function( NAC::Worker::Function::LocalConfigData->new() );
+
+    bless $self, $class;
+    $self;
 }
-
-
 
 
 1;

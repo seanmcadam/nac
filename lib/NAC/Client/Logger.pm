@@ -20,53 +20,78 @@ use constant SET_DEBUG_LEVEL => 'SET_DEBUG_LEVEL';
 my $hostname = hostname();
 my $program  = $0;
 
+our $LOGGER_EVENT   = sub { confess "*** LOGGER_EVENT UNINITIALIZED ***" };
+our $LOGGER_FATAL   = sub { confess "*** LOGGER_FATAL UNINITIALIZED ***" };
+our $LOGGER_CRIT    = sub { confess "*** LOGGER_CRIT UNINITIALIZED ***" };
+our $LOGGER_ERROR   = sub { confess "*** LOGGER_ERROR UNINITIALIZED ***" };
+our $LOGGER_WARN    = sub { confess "*** LOGGER_WARN UNINITIALIZED ***" };
+our $LOGGER_NOTICE  = sub { confess "*** LOGGER_NOTICE UNINITIALIZED ***" };
+our $LOGGER_INFO    = sub { confess "*** LOGGER_INFO UNINITIALIZED ***" };
+our $LOGGER_DEBUG_0 = sub { confess "*** LOGGER_DENUG_0 UNINITIALIZED ***" };
+our $LOGGER_DEBUG_1 = sub { confess "*** LOGGER_DENUG_1 UNINITIALIZED ***" };
+our $LOGGER_DEBUG_2 = sub { confess "*** LOGGER_DENUG_2 UNINITIALIZED ***" };
+our $LOGGER_DEBUG_3 = sub { confess "*** LOGGER_DENUG_3 UNINITIALIZED ***" };
+our $LOGGER_DEBUG_4 = sub { confess "*** LOGGER_DENUG_4 UNINITIALIZED ***" };
+our $LOGGER_DEBUG_5 = sub { confess "*** LOGGER_DENUG_5 UNINITIALIZED ***" };
+our $LOGGER_DEBUG_6 = sub { confess "*** LOGGER_DENUG_6 UNINITIALIZED ***" };
+our $LOGGER_DEBUG_7 = sub { confess "*** LOGGER_DENUG_7 UNINITIALIZED ***" };
+our $LOGGER_DEBUG_8 = sub { confess "*** LOGGER_DENUG_8 UNINITIALIZED ***" };
+our $LOGGER_DEBUG_9 = sub { confess "*** LOGGER_DENUG_9 UNINITIALIZED ***" };
+
 our @export = qw(
+  $LOGGER_EVENT
+  $LOGGER_FATAL
+  $LOGGER_CRIT
+  $LOGGER_ERROR
+  $LOGGER_WARN
+  $LOGGER_NOTICE
+  $LOGGER_INFO
+  $LOGGER_DEBUG_0
+  $LOGGER_DEBUG_1
+  $LOGGER_DEBUG_2
+  $LOGGER_DEBUG_3
+  $LOGGER_DEBUG_4
+  $LOGGER_DEBUG_5
+  $LOGGER_DEBUG_6
+  $LOGGER_DEBUG_7
+  $LOGGER_DEBUG_8
+  $LOGGER_DEBUG_9
   SET_LOG_LEVEL
   SET_DEBUG_LEVEL
   CLIENT_PARM_SERVER_NAME
-  LOG_DEBUG_LEVEL_0
-  LOG_DEBUG_LEVEL_1
-  LOG_DEBUG_LEVEL_2
-  LOG_DEBUG_LEVEL_3
-  LOG_DEBUG_LEVEL_4
-  LOG_DEBUG_LEVEL_5
-  LOG_DEBUG_LEVEL_6
-  LOG_DEBUG_LEVEL_7
-  LOG_DEBUG_LEVEL_8
-  LOG_DEBUG_LEVEL_9
 );
 
 our @EXPORT = ( @export, @NAC::DataRequest::LocalLogger::EXPORT );
-
-# print "Client::Logger EXPORTs:\n" . Dumper @NAC::DataRequest::LocalLogger::EXPORT;
 
 our @ISA = qw(NAC::Client);
 
 # ---------------------------------------------
 sub new {
     my ( $class, $parms ) = @_;
+
     # my $self = $class->SUPER::new($parms);
     my $self = $class->SUPER::new();
 
     $self->{SET_LOG_LEVEL}   = ( defined $parms->{SET_LOG_LEVEL} )   ? $parms->{SET_LOG_LEVEL}   : LOG_LEVEL_INFO;
     $self->{SET_DEBUG_LEVEL} = ( defined $parms->{SET_DEBUG_LEVEL} ) ? $parms->{SET_DEBUG_LEVEL} : LOG_DEFAULT_DEBUG_LEVEL;
 
-    $NAC::LOG_EVENT   = sub { $self->_LOG( LOG_LEVEL_EVENT,  @_ ); };
-    $NAC::LOG_FATAL   = sub { $self->_LOG( LOG_LEVEL_FATAL,  @_ ); confess; };
-    $NAC::LOG_CRIT    = sub { $self->_LOG( LOG_LEVEL_CRIT,   @_ ); };
-    $NAC::LOG_ERROR   = sub { $self->_LOG( LOG_LEVEL_ERROR,  @_ ); };
-    $NAC::LOG_NOTICE  = sub { $self->_LOG( LOG_LEVEL_NOTICE, @_ ); };
-    $NAC::LOG_INFO    = sub { $self->_LOG( LOG_LEVEL_INFO,   @_ ); };
-    $NAC::LOG_DEBUG_0 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_0, @_ ); };
-    $NAC::LOG_DEBUG_1 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_1, @_ ); };
-    $NAC::LOG_DEBUG_2 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_2, @_ ); };
-    $NAC::LOG_DEBUG_3 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_3, @_ ); };
-    $NAC::LOG_DEBUG_4 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_4, @_ ); };
-    $NAC::LOG_DEBUG_5 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_5, @_ ); };
-    $NAC::LOG_DEBUG_6 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_6, @_ ); };
-    $NAC::LOG_DEBUG_7 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_7, @_ ); };
-    $NAC::LOG_DEBUG_8 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_8, @_ ); };
-    $NAC::LOG_DEBUG_9 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_9, @_ ); };
+    $LOGGER_EVENT   = sub { $self->_LOG( LOG_LEVEL_EVENT,  LOG_DEBUG_LEVEL_NONE, ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_INFO ),   @_ ); };
+    $LOGGER_FATAL   = sub { $self->_LOG( LOG_LEVEL_FATAL,  LOG_DEBUG_LEVEL_NONE, ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_FATAL ),  @_ ); confess Dumper @_; };
+    $LOGGER_CRIT    = sub { $self->_LOG( LOG_LEVEL_CRIT,   LOG_DEBUG_LEVEL_NONE, ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_CRIT ),   @_ ); };
+    $LOGGER_ERROR   = sub { $self->_LOG( LOG_LEVEL_ERROR,  LOG_DEBUG_LEVEL_NONE, ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_ERR ),    @_ ); };
+    $LOGGER_WARN    = sub { $self->_LOG( LOG_LEVEL_WARN,   LOG_DEBUG_LEVEL_NONE, ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_WARN ),   @_ ); };
+    $LOGGER_NOTICE  = sub { $self->_LOG( LOG_LEVEL_NOTICE, LOG_DEBUG_LEVEL_NONE, ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_NOTICE ), @_ ); };
+    $LOGGER_INFO    = sub { $self->_LOG( LOG_LEVEL_INFO,   LOG_DEBUG_LEVEL_NONE, ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_INFO ),   @_ ); };
+    $LOGGER_DEBUG_0 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_0,    ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_DEBUG ),  @_ ); };
+    $LOGGER_DEBUG_1 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_1,    ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_DEBUG ),  @_ ); };
+    $LOGGER_DEBUG_2 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_2,    ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_DEBUG ),  @_ ); };
+    $LOGGER_DEBUG_3 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_3,    ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_DEBUG ),  @_ ); };
+    $LOGGER_DEBUG_4 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_4,    ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_DEBUG ),  @_ ); };
+    $LOGGER_DEBUG_5 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_5,    ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_DEBUG ),  @_ ); };
+    $LOGGER_DEBUG_6 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_6,    ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_DEBUG ),  @_ ); };
+    $LOGGER_DEBUG_7 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_7,    ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_DEBUG ),  @_ ); };
+    $LOGGER_DEBUG_8 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_8,    ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_DEBUG ),  @_ ); };
+    $LOGGER_DEBUG_9 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_9,    ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_DEBUG ),  @_ ); };
 
     bless $self, $class;
     $self;
@@ -86,7 +111,7 @@ sub set_debug_level {
 
 # ---------------------------------------------
 sub _LOG {
-    my ( $self, $level, $event, $message, $debug_level ) = @_;
+    my ( $self, $level, $debug_level, $event, $message ) = @_;
     my $ret        = 0;
     my $job_handle = 0;
 

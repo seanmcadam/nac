@@ -25,10 +25,12 @@ use constant WORKER_PARM_NOLOG       => 'WORKER_PARM_NOLOG';
 use constant _SERVER                 => 'SERVER';
 use constant _LOGGER                 => 'LOGGER_CLIENT';
 
-our @EXPORT = qw (
+our @export = qw (
   WORKER_PARM_SERVER
   WORKER_SERVER_LOCALHOST
 );
+
+our @EXPORT = ( @export, @NAC::LocalLogger::EXPORT );
 
 # ----------------------------------------------
 #
@@ -40,30 +42,6 @@ sub new {
     my $s    = '';
     my $p    = '';
 
-    if ( !defined $parms || !defined $parms->{WORKER_PARM_NOLOG} ) {
-        NAC::LocalLogger->new();
-    }
-    else {
-
-        # place holders if the system does not have logging in place
-        $NAC::LOG_EVENT   = sub { };
-        $NAC::LOG_FATAL   = sub { };
-        $NAC::LOG_CRIT    = sub { };
-        $NAC::LOG_ERROR   = sub { };
-        $NAC::LOG_NOTICE  = sub { };
-        $NAC::LOG_INFO    = sub { };
-        $NAC::LOG_DEBUG_0 = sub { };
-        $NAC::LOG_DEBUG_1 = sub { };
-        $NAC::LOG_DEBUG_2 = sub { };
-        $NAC::LOG_DEBUG_3 = sub { };
-        $NAC::LOG_DEBUG_4 = sub { };
-        $NAC::LOG_DEBUG_5 = sub { };
-        $NAC::LOG_DEBUG_6 = sub { };
-        $NAC::LOG_DEBUG_7 = sub { };
-        $NAC::LOG_DEBUG_8 = sub { };
-        $NAC::LOG_DEBUG_9 = sub { };
-    }
-
     my $server = $parms->{WORKER_PARM_SERVER};
     if ( !defined $server ) {
         $server = WORKER_SERVER_LOCALHOST;
@@ -73,10 +51,14 @@ sub new {
         $s = $server;
     }
 
+	$LOGGER_DEBUG_9->( " SERVER: " . $s );
+
     my $port = $parms->{WORKER_PARM_PORT};
     if ( defined $port ) {
         $p = $port;
     }
+
+	$LOGGER_DEBUG_9->( " PORT: " . $p );
 
     #
     # Only creates on Job server connection per server
@@ -88,11 +70,12 @@ sub new {
         if ( $server eq WORKER_SERVER_LOCALHOST ) {
             $s = '';
             $p = '';
+    		$LOGGER_DEBUG_9->( " CONNECT TO LOCALHOST " );
         }
 
         my $ret = $servers{$server}->add_server( $s, $p );
         if ( $ret != GEARMAN_SUCCESS ) {
-            confess;
+	    $LOGGER_FATAL->( EVENT_FATAL, " ADD SERVER FAILED " );
         }
 
     }
@@ -101,7 +84,7 @@ sub new {
 
     bless $self, $class;
 
-    $NAC::LOG_DEBUG_5->( EVENT_START, " STARTING WORKER " );
+    $LOGGER_DEBUG_9->( EVENT_START, " STARTING WORKER " );
 
     $self;
 }
@@ -122,7 +105,7 @@ sub work {
     while (1) {
         my $ret = $self->_server->work();
         if ( $ret != GEARMAN_SUCCESS ) {
-            confess;
+	    $LOGGER_FATAL->( EVENT_FATAL, " WORKER LOOP FAILED " );
         }
     }
 }
@@ -139,7 +122,7 @@ sub add_worker_function {
 
     my $ret = $self->_server->add_function( $function_obj->function_name, 0, $function_obj->function_ref, $options );
     if ( $ret != GEARMAN_SUCCESS ) {
-        warn;
+	$LOGGER_FATAL->( EVENT_FATAL, " ADD WORKER FUNCTION FAILED:" . $function_obj->function_name );
     }
     $ret;
 }

@@ -36,13 +36,14 @@ sub function {
 
 my $time = localtime(time);
 print "$time:";
+print Dumper $request->data();
 print $request->level();
 print ":";
-print $request->event();
-print "\nEVENT: ";
 print $request->hostname();
+print "\nEVENT: ";
+print $request->event();
 print "\nPROGRAM: ";
-print $request->package();
+print $request->program();
 print "\nPACK: ";
 print $request->package();
 print "\nSUB: ";

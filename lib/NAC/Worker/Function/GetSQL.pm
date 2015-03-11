@@ -6,9 +6,9 @@ use Data::Dumper;
 use Carp;
 use FindBin;
 use lib "$FindBin::Bin/../../..";
-use NAC::DB;
 use NAC::DataRequest::SQL;
 use NAC::DataResponse::SQL;
+use NAC::Worker::DB;
 use NAC::Worker::Function;
 use strict;
 

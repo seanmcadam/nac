@@ -9,6 +9,7 @@ package NAC::Worker::Function;
 
 use Data::Dumper;
 use Carp;
+use base qw( Exporter );
 use Gearman::Task;
 use Storable qw ( freeze thaw );
 use FindBin;
@@ -19,6 +20,8 @@ use strict;
 
 use constant FUNCTION_NAME => 'FUNCTION_NAME';
 use constant FUNCTION_REF  => 'FUNCTION_REF';
+
+our @EXPORT = @NAC::LocalLogger::EXPORT;
 
 # --------------------------------------------------------
 #

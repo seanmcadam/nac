@@ -21,9 +21,7 @@ our @ISA = qw(NAC::Client);
 # ---------------------------------------------
 sub new {
     my ( $class, $parms ) = @_;
-    NAC::LocalLogger->new();
     my $self = $class->SUPER::new($parms);
-
 }
 
 sub do {

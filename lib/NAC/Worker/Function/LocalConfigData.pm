@@ -31,11 +31,9 @@ sub function {
 
     if ( ref($request) ne 'NAC::DataRequest::Config' ) { confess; }
 
-    my $sql = $request->sql;
-    my $pid = $request->request_pid;
-    my $num = $request->request_num;
-
-    $LOGGER_DEBUG_3->($sql);
+    my $sql    = $request->sql;
+    my $pid    = $request->pid;
+    my $reqnum = $request->count;
 
     my $sth = DBH()->prepare($sql) || $LOGGER_FATAL->( DBH()->errstr );
 
@@ -46,13 +44,31 @@ sub function {
 
     eval {
         $sth->execute;
+        my $row_count = $sth->rows();
+
+        $LOGGER_DEBUG_3->(" SQL SELECT SUCCESS ROW: $row_count PID:$pid, REQUEST:$reqnum");
+
+        my $row_arrref = (( $row_count) ? $sth->fetchall_arrayref() : undef );
+	my $columns = $request->get_column_alias_ref;
+        $response = NAC::DataResponse::Config->new(
+            { GET_COUNT => $row_count,
+                GET_DATA => ( ($row_count) ? $row_arrref : undef ),
+                GET_REQUEST => $reqnum,
+                GET_COLUMNS => $columns,
+                GET_PID     => $pid,
+                GET_SQL     => $sql,
+            }, );
+
     };
+
     if ($@) {
-        $LOGGER_CRIT->( "STH EXECUTE ERROR STR: " . DBH()->errstr . "\nSQL: " . $sql );
-        $response = NAC::DataResponse::Config->new( { SQL_ERROR => DBH()->errstr, SQL_RESPONSE_NUM => $num, SQL_RESPONSE_PID => $pid, }, );
-    }
-    else {
-        $response = NAC::DataResponse::Config->new( { SQL_SELECT => $sth->fetchrow_hashref, SQL_RESPONSE_NUM => $num, SQL_RESPONSE_PID => $pid, }, );
+        $LOGGER_CRIT->( "STH EVAL ERROR: " . $@ );
+        $response = NAC::DataResponse::Config->new(
+            { GET_ERROR => "GET CONFIG DB ERROR '" . $@ . "'",
+                GET_SQL     => $sql,
+                GET_PID     => $pid,
+                GET_REQUEST => $reqnum,
+            }, );
     }
 
     $response;

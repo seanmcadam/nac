@@ -23,6 +23,12 @@ our @ISA = qw(NAC::Client::Logger);
 
 sub new {
     my ( $class, $parms ) = @_;
+
+    if( defined $nac_local_logger ) {
+#	$LOGGER_CRIT->("LocalLogger initalized more then once");
+	warn "LocalLogger initalized more then once!\n";
+	}
+
     my $self = $class->SUPER::new($parms);
     bless $self, $class;
     $self;

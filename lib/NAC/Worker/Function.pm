@@ -34,10 +34,9 @@ sub new {
     $self->{FUNCTION_REF}  = sub {
         my $json = thaw( $_[0]->workload() );
 
-        my $data = NAC::DataRequest->new();
-        $data->set_json($json);
+        my $data = NAC::DataRequest->new( {REQUEST_JSON => $json} );
 
-        my $ret = $func_ref->( $data->set_json($json) );
+        my $ret = $func_ref->( $data );
         if ( ref($ret) ) {
             return freeze($ret);
         }

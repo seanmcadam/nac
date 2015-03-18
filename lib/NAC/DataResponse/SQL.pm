@@ -32,8 +32,6 @@ our @ISA = qw(NAC::DataResponse);
 
 sub new {
     my ( $class, $parms ) = @_;
-    my $self = $class->SUPER::new();
-    bless $self, $class;
 
     if( ! defined $parms ) {
 	$LOGGER_FATAL->( "NO PARMS DEFINED" );
@@ -74,6 +72,9 @@ sub new {
         $LOGGER_ERROR->("NO SQL COMMAND ");
         $self->{SQL_ERROR} = "NO SQL COMMAND";
 	}
+
+    my $self = $class->SUPER::new(\%data);
+    bless $self, $class;
 
     $self;
 }

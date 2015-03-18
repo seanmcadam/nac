@@ -2,12 +2,13 @@
 
 package NAC::Worker::DB;
 
+use Data::Dumper;
 use base qw( Exporter );
 use DBI;
 use FindBin;
 use lib "$FindBin::Bin/../..";
 use NAC::DB;
-use NAC::DataRequest::Logger;
+use NAC::LocalLogger;
 use strict;
 
 use constant 'DB_SERVER' => 'DB_SERVER';
@@ -34,6 +35,9 @@ my @export = qw (
 
 our @EXPORT = ( @export, @NAC::DB::EXPORT );
 
+#
+# Some default Values
+#
 my $db_source;
 my $server = 'localhost';
 my $port   = '3306';
@@ -56,7 +60,7 @@ sub dbh_init {
         $db     = $parms->{DB_NAME}   if ( defined $parms->{DB_NAME} );
     }
 
-    my $db_source = "dbi:mysql:"
+    $db_source = "dbi:mysql:"
       . "dbname=$db;"
       . "host=$server;"
       . "port=$port;"
@@ -64,30 +68,45 @@ sub dbh_init {
 
 }
 
+sub mysql_HandleError {
+    my ( $errstr, $dbh ) = @_;
+
+    $LOGGER_WARN->( "MYSQL ERROR HANDLE CALLED" . $dbh::errstr );
+    $LOGGER_FATAL->( "MYSQL ERROR HANDLE CALLED" . Dumper @_ );
+
+    # Need to fill in here
+    # Catch DB disconnect.
+
+}
+
+sub db_connect {
+
+    if ( !( $DBH = DBI->connect(
+                $db_source,
+                $user,
+                $pass,
+                {
+                    PrintError           => 1,
+                    RaiseError           => 1,
+                    AutoCommit           => 1,
+                    mysql_auto_reconnect => 1,
+                    mysql_HandleError    => \&mysql_HandleError,
+                },
+            ) ) ) {
+        $LOGGER_FATAL->( " CONNECT DB FAILED " . $DBI::errstr );
+    }
+}
+
 sub DBH {
 
     if ( !$INIT ) {
-        LOGGER_FATAL->(" CALLED DBH BEFORE INIT ");
+        $LOGGER_FATAL->(" CALLED DBH BEFORE INIT ");
     }
 
-    LOGGER_DEBUG_9->(" CALLED DBH ");
+    $LOGGER_DEBUG_9->(" CALLED DBH ");
 
     if ( !$DBH ) {
-
-        LOGGER_DEBUG_6->(" CONNECT TO DB ");
-
-        if ( !( $DBH = DBI->connect(
-                    $db_source,
-                    $user,
-                    $pass,
-                    {
-                        PrintError => 1,
-                        RaiseError => 1,
-                        AutoCommit => 1,
-                    },
-                ) ) ) {
-            LOGGER_FATAL->( " CONNECT DB FAILED " . $DBI::errstr );
-        }
+        db_connect();
     }
 
     $DBH;

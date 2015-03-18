@@ -9,7 +9,8 @@ use Storable qw(freeze thaw);
 use Gearman::XS qw(:constants);
 use Gearman::XS::Client;
 use FindBin;
-use lib "$FindBin::Bin/..";
+use lib "$FindBin::Bin/../..";
+use NAC::LocalLogger;
 use strict;
 use 5.010;
 
@@ -45,7 +46,8 @@ sub do_background {
     my ( $self, $function, $data_obj ) = @_;
     my ( $ret, $handle ) = $self->{CLIENT}->do_background( $function, freeze( $data_obj->get_json ) );
     if ( $ret != GEARMAN_SUCCESS ) {
-        carp "Failure sending to Server\n";
+        carp "Failure background sending to Server: $ret\n";
+	# $LOGGER_ERROR->( " FAILED TO SEND TO SERVER in BACKGROUND " );
     }
 }
 
@@ -56,7 +58,9 @@ sub do {
     my ( $self, $function, $data_obj ) = @_;
     my ( $ret, $result ) = $self->{CLIENT}->do( $function, freeze( $data_obj->get_json ) );
     if ( $ret != GEARMAN_SUCCESS ) {
-        carp "Failure sending to Server\n";
+        carp "Failure sending to Server $ret\n";
+	# $LOGGER_ERROR->( " FAILED TO SEND TO SERVER " );
+	return 0;
     }
     return thaw( $result );
 }

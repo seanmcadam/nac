@@ -35,11 +35,14 @@ sub function {
 	}
 
 my $time = localtime(time);
-print "$time:";
-print Dumper $request->data();
+
+print "******************************\n";
+print "$time: ";
+#print Dumper $request;
+#print Dumper $request->data();
 print $request->level();
-print ":";
-print $request->hostname();
+print " ";
+print $request->host();
 print "\nEVENT: ";
 print $request->event();
 print "\nPROGRAM: ";

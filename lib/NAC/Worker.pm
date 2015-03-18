@@ -103,10 +103,15 @@ sub _server {
 sub work {
     my ($self) = @_;
     while (1) {
+	eval {
         my $ret = $self->_server->work();
         if ( $ret != GEARMAN_SUCCESS ) {
-	    $LOGGER_FATAL->( EVENT_FATAL, " WORKER LOOP FAILED " );
+	    $LOGGER_CRIT->( " WORKER LOOP FAILED " );
         }
+        };
+	if( $@ ) {
+	    $LOGGER_CRIT->( " EVAL ERROR:" . $@ );
+	}
     }
 }
 

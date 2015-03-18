@@ -75,13 +75,13 @@ sub new {
     $self->{SET_LOG_LEVEL}   = ( defined $parms->{SET_LOG_LEVEL} )   ? $parms->{SET_LOG_LEVEL}   : LOG_LEVEL_INFO;
     $self->{SET_DEBUG_LEVEL} = ( defined $parms->{SET_DEBUG_LEVEL} ) ? $parms->{SET_DEBUG_LEVEL} : LOG_DEFAULT_DEBUG_LEVEL;
 
-    $LOGGER_EVENT   = sub { $self->_LOG( LOG_LEVEL_EVENT,  LOG_DEBUG_LEVEL_NONE, ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_INFO ),   @_ ); };
     $LOGGER_FATAL   = sub { $self->_LOG( LOG_LEVEL_FATAL,  LOG_DEBUG_LEVEL_NONE, ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_FATAL ),  @_ ); confess Dumper @_; };
     $LOGGER_CRIT    = sub { $self->_LOG( LOG_LEVEL_CRIT,   LOG_DEBUG_LEVEL_NONE, ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_CRIT ),   @_ ); };
     $LOGGER_ERROR   = sub { $self->_LOG( LOG_LEVEL_ERROR,  LOG_DEBUG_LEVEL_NONE, ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_ERR ),    @_ ); };
     $LOGGER_WARN    = sub { $self->_LOG( LOG_LEVEL_WARN,   LOG_DEBUG_LEVEL_NONE, ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_WARN ),   @_ ); };
     $LOGGER_NOTICE  = sub { $self->_LOG( LOG_LEVEL_NOTICE, LOG_DEBUG_LEVEL_NONE, ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_NOTICE ), @_ ); };
     $LOGGER_INFO    = sub { $self->_LOG( LOG_LEVEL_INFO,   LOG_DEBUG_LEVEL_NONE, ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_INFO ),   @_ ); };
+    $LOGGER_EVENT   = sub { $self->_LOG( LOG_LEVEL_EVENT,  LOG_DEBUG_LEVEL_NONE, ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_INFO ),   @_ ); };
     $LOGGER_DEBUG_0 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_0,    ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_DEBUG ),  @_ ); };
     $LOGGER_DEBUG_1 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_1,    ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_DEBUG ),  @_ ); };
     $LOGGER_DEBUG_2 = sub { $self->_LOG( LOG_LEVEL_DEBUG,  LOG_DEBUG_LEVEL_2,    ( ( defined $log_events{ $_[0] } ) ? shift @_ : EVENT_DEBUG ),  @_ ); };

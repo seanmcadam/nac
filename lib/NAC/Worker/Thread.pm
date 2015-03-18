@@ -11,8 +11,7 @@ use threads;
 use strict;
 use 5.010;
 
-my $logger = undef;
-
+#my $logger = undef;
 
 use constant THREAD_PARM_NOLOG       => 'THREAD_PARM_NOLOG';
 use constant TID => 'TID';

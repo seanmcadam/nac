@@ -9,6 +9,9 @@ use Carp;
 use POSIX;
 use FindBin;
 use lib "$FindBin::Bin/../..";
+use NAC::LocalLogger;
+use NAC::DataRequest;
+use NAC::DB;
 use strict;
 
 use constant 'GET_DATA'          => 'GET_DATA';
@@ -16,31 +19,31 @@ use constant 'GET_CONDITION'     => 'GET_CONDITION';
 use constant 'GET_TABLE'         => 'GET_TABLE';
 use constant 'GET_LIMIT'         => 'GET_LIMIT';
 use constant 'GET_ORDER'         => 'GET_ORDER';
-use constant 'GET_DATA_COLUMN'   => 'DATA_COLUMN';
-use constant 'GET_DATA_COUNT'    => 'DATA_COUNT';
-use constant 'GET_DATA_ALIAS'    => 'DATA_ALIAS';
-use constant 'GET_DATA_OP_PLUS'  => 'DATA_OP_PLUS';
-use constant 'GET_DATA_OP_MINUS' => 'DATA_OP_MINUS';
-use constant 'GET_DATA_OP_MULT'  => 'DATA_OP_MULT';
-use constant 'GET_DATA_OP_DIV'   => 'DATA_OP_DIV';
-use constant 'GET_DATA_VALUE'    => 'DATA_VALUE';
-use constant 'GET_COND_COL_EQ'   => 'COND_COL_EQ';
-use constant 'GET_COND_COL_NEQ'  => 'COND_COL_NEQ';
-use constant 'GET_COND_COL_GT'   => 'COND_COL_GT';
-use constant 'GET_COND_COL_GTE'  => 'COND_COL_GTE';
-use constant 'GET_COND_COL_LT'   => 'COND_COL_LT';
-use constant 'GET_COND_COL_LTE'  => 'COND_COL_LTE';
-use constant 'GET_COND_VAL_EQ'   => 'COND_VAL_EQ';
-use constant 'GET_COND_VAL_NEQ'  => 'COND_VAL_NEQ';
-use constant 'GET_COND_VAL_GT'   => 'COND_VAL_GT';
-use constant 'GET_COND_VAL_GTE'  => 'COND_VAL_GTE';
-use constant 'GET_COND_VAL_LT'   => 'COND_VAL_LT';
-use constant 'GET_COND_VAL_LTE'  => 'COND_VAL_LTE';
-use constant 'GET_COND_VAL_LIKE' => 'COND_VAL_LIKE';
-use constant 'GET_LIMIT_ORIGIN'  => 'LIMIT_ORIGIN';
-use constant 'GET_LIMIT_LENGTH'  => 'LIMIT_LENGTH';
-use constant 'GET_ORDER_COLUMN'  => 'ORDER_COLUMN';
-use constant 'GET_ORDER_DIR'     => 'ORDER_DIR';
+use constant 'GET_DATA_COLUMN'   => 'GET_DATA_COLUMN';
+use constant 'GET_DATA_COUNT'    => 'GET_DATA_COUNT';
+use constant 'GET_DATA_ALIAS'    => 'GET_DATA_ALIAS';
+use constant 'GET_DATA_OP_PLUS'  => 'GET_DATA_OP_PLUS';
+use constant 'GET_DATA_OP_MINUS' => 'GET_DATA_OP_MINUS';
+use constant 'GET_DATA_OP_MULT'  => 'GET_DATA_OP_MULT';
+use constant 'GET_DATA_OP_DIV'   => 'GET_DATA_OP_DIV';
+use constant 'GET_DATA_VALUE'    => 'GET_DATA_VALUE';
+use constant 'GET_COND_COL_EQ'   => 'GET_COND_COL_EQ';
+use constant 'GET_COND_COL_NEQ'  => 'GET_COND_COL_NEQ';
+use constant 'GET_COND_COL_GT'   => 'GET_COND_COL_GT';
+use constant 'GET_COND_COL_GTE'  => 'GET_COND_COL_GTE';
+use constant 'GET_COND_COL_LT'   => 'GET_COND_COL_LT';
+use constant 'GET_COND_COL_LTE'  => 'GET_COND_COL_LTE';
+use constant 'GET_COND_VAL_EQ'   => 'GET_COND_VAL_EQ';
+use constant 'GET_COND_VAL_NEQ'  => 'GET_COND_VAL_NEQ';
+use constant 'GET_COND_VAL_GT'   => 'GET_COND_VAL_GT';
+use constant 'GET_COND_VAL_GTE'  => 'GET_COND_VAL_GTE';
+use constant 'GET_COND_VAL_LT'   => 'GET_COND_VAL_LT';
+use constant 'GET_COND_VAL_LTE'  => 'GET_COND_VAL_LTE';
+use constant 'GET_COND_VAL_LIKE' => 'GET_COND_VAL_LIKE';
+use constant 'GET_LIMIT_ORIGIN'  => 'GET_LIMIT_ORIGIN';
+use constant 'GET_LIMIT_LENGTH'  => 'GET_LIMIT_LENGTH';
+use constant 'GET_ORDER_COLUMN'  => 'GET_ORDER_COLUMN';
+use constant 'GET_ORDER_DIR'     => 'GET_ORDER_DIR';
 
 #
 # GET_DATA => [ {
@@ -140,12 +143,14 @@ sub new {
         confess;
     }
 
+    $LOGGER_DEBUG_8->( EVENT_START, );
+
     my %data = ();
 
-    confess Dumper @_ if ( ( !defined $dataref->{GET_DATA} ) || ( !_verify_data_array( $dataref->{GET_DATA} ) ) );
-    confess Dumper @_ if ( ( defined $dataref->{GET_CONDITION} ) && ( !_verify_condition( $dataref->{GET_CONDITION} ) ) );
-    confess Dumper @_ if ( ( defined $dataref->{GET_LIMIT} )     && ( !_verify_limit( $dataref->{GET_LIMIT} ) ) );
-    confess Dumper @_ if ( ( defined $dataref->{GET_ORDER} )     && ( !_verify_order( $dataref->{GET_ORDER} ) ) );
+    confess Dumper $dataref if ( ( !defined $dataref->{GET_DATA} ) || ( !_verify_data_array( $dataref->{GET_DATA} ) ) );
+    confess Dumper $dataref if ( ( defined $dataref->{GET_CONDITION} ) && ( !_verify_condition( $dataref->{GET_CONDITION} ) ) );
+    confess Dumper $dataref if ( ( defined $dataref->{GET_LIMIT} )     && ( !_verify_limit( $dataref->{GET_LIMIT} ) ) );
+    confess Dumper $dataref if ( ( defined $dataref->{GET_ORDER} )     && ( !_verify_order( $dataref->{GET_ORDER} ) ) );
 
     $data{GET_DATA} = $dataref->{GET_DATA};
 
@@ -161,7 +166,7 @@ sub new {
         $data{GET_ORDER} = $dataref->{GET_ORDER};
     }
 
-    my $self = $class->SUPER::new( $class, \%data );
+    my $self = $class->SUPER::new( { REQUEST_DATA => \%data } );
     bless $self, $class;
     $self;
 }
@@ -171,43 +176,57 @@ sub new {
 # --------------------------------------------
 sub sql {
     my ($self) = @_;
-    my $sql;
     my $dataref = $self->data();
+    my $select;
+    my $from;
+    my $where;
+    my $limit;
+    my $order;
 
     #
     # SELECT ... columns
-    #
-
-    #
     # Columns:  COL1 AS COL1A, COL2 AS COL2A, ...
     #
-    $sql .= join( ', ', ( map {
+    my $select_count = 0;
+    $select = "SELECT " . join( ', ', ( map {
                 my $colref = $_;
                 my $s      = '';
+
+                $LOGGER_DEBUG_9->( " SQL SELECT " . $select_count++ . "'" . "COLREF:" . ( Dumper $colref) . " DATA:" . ( Dumper keys(%$colref) ) );
+
                 if ( defined $colref->{GET_DATA_COLUMN} ) {
-                    $s .= get_column_dbname( $colref->{GET_DATA_COLUMN} );
+                    $s .= get_column_alias( $colref->{GET_DATA_COLUMN} );
                 }
                 elsif ( defined $colref->{GET_DATA_COUNT} ) {
-                    $s .= "COUNT( " . get_column_dbname( $colref->{GET_DATA_COLUMN} ) . " )";
+                    $s .= "COUNT( " . get_column_alias( $colref->{GET_DATA_COLUMN} ) . " )";
+                }
+                else {
+                    $LOGGER_FATAL->( " SQL SELECT NO COLUMN DEFINED " . Dumper $colref );
                 }
 
                 if ( defined $colref->{GET_DATA_ALIAS} ) {
-                    $s .= " AS " . get_column_alias( $colref->{GET_DATA_COLUMN} );
+                    $s .= " AS '" . $colref->{GET_DATA_ALIAS} . "'";
                 }
-                $s;
+
+                ($s);
+
     } @{ $dataref->{GET_DATA} } ) );
+
+    $LOGGER_DEBUG_4->( " SQL SELECT '" . $select . "'" );
 
     #
     # FROM ... tables
     #
     my $tableref = $self->list_tables;
 
-    $sql .= join( ', ', ( map { get_table_dbname($_) . " AS " . get_table_alias($_); } @{$tableref} ) );
+    $from = " FROM " . join( ', ', ( map { get_table_dbname($_) . " AS " . get_table_alias($_); } @{$tableref} ) );
+
+    $LOGGER_DEBUG_4->( " SQL FROM '" . $from . "'" );
 
     #
     # WHERE .. conditions
     #
-    $sql .= join( "\nAND\n", ( map {
+    $where = join( "\nAND\n", ( map {
                 my $condref = $_;
                 my $s       = '';
 
@@ -219,20 +238,27 @@ sub sql {
                 $s = $q . $op1 . $q
                   . $ops{$op}
                   . $q . $op2 . $q;
-
     } @{ $dataref->{GET_CONDITION} } ) );
 
-HERE - Add Logging too.
+    if ( $where =~ /\w/ ) {
+        $where = " WHERE " . $where;
+    }
 
+    $LOGGER_DEBUG_4->( " SQL WHERE '" . $where . "'" );
 
     #
     # ORDER .. column, dir
     #
+    $order = '';
 
     #
     # LIMIT .. limits
     #
+    $order = '';
 
+    my $sql = join( ' ', ( $select, $from, $where, $limit, $order ) );
+
+    $LOGGER_DEBUG_3->( " SQL: '" . $sql . "'" );
 
     $sql;
 }
@@ -249,43 +275,43 @@ sub list_tables {
     my $condref = $self->data()->{GET_CONDITION};
 
     foreach my $col (@$dataref) {
-        if ( defined $col->{DATA_COLUMN} ) {
-            $tables{ get_column_table( $col->{DATA_COLUMN} ) }++;
+        if ( defined $col->{GET_DATA_COLUMN} ) {
+            $tables{ get_column_table( $col->{GET_DATA_COLUMN} ) }++;
         }
-        elsif ( defined $dataref->{DATA_COUNT} ) {
-            $tables{ get_column_table( $col->{DATA_COUNT} ) }++;
+        elsif ( defined $dataref->{GET_DATA_COUNT} ) {
+            $tables{ get_column_table( $col->{GET_DATA_COUNT} ) }++;
         }
     }
 
     if ( defined $condref ) {
         foreach my $cond (@$dataref) {
-            if ( defined $cond->{COND_COL_EQ} ) {
-                $tables{ get_column_table( { $cond->{COND_COL_EQ} }->[0] ) }++;
-                $tables{ get_column_table( { $cond->{COND_COL_EQ} }->[1] ) }++;
+            if ( defined $cond->{GET_COND_COL_EQ} ) {
+                $tables{ get_column_table( { $cond->{GET_COND_COL_EQ} }->[0] ) }++;
+                $tables{ get_column_table( { $cond->{GET_COND_COL_EQ} }->[1] ) }++;
             }
-            elsif ( defined $cond->{COND_COL_NEQ} ) {
-                $tables{ get_column_table( { $cond->{COND_COL_NEQ} }->[0] ) }++;
-                $tables{ get_column_table( { $cond->{COND_COL_NEQ} }->[1] ) }++;
+            elsif ( defined $cond->{GET_COND_COL_NEQ} ) {
+                $tables{ get_column_table( { $cond->{GET_COND_COL_NEQ} }->[0] ) }++;
+                $tables{ get_column_table( { $cond->{GET_COND_COL_NEQ} }->[1] ) }++;
             }
-            elsif ( defined $cond->{COND_COL_GT} ) {
-                $tables{ get_column_table( { $cond->{COND_COL_GT} }->[0] ) }++;
-                $tables{ get_column_table( { $cond->{COND_COL_GT} }->[1] ) }++;
+            elsif ( defined $cond->{GET_COND_COL_GT} ) {
+                $tables{ get_column_table( { $cond->{GET_COND_COL_GT} }->[0] ) }++;
+                $tables{ get_column_table( { $cond->{GET_COND_COL_GT} }->[1] ) }++;
             }
-            elsif ( defined $cond->{COND_COL_LT} ) {
-                $tables{ get_column_table( { $cond->{COND_COL_LT} }->[0] ) }++;
-                $tables{ get_column_table( { $cond->{COND_COL_LT} }->[1] ) }++;
+            elsif ( defined $cond->{GET_COND_COL_LT} ) {
+                $tables{ get_column_table( { $cond->{GET_COND_COL_LT} }->[0] ) }++;
+                $tables{ get_column_table( { $cond->{GET_COND_COL_LT} }->[1] ) }++;
             }
-            elsif ( defined $cond->{COND_VAL_EQ} ) {
-                $tables{ get_column_table( { $cond->{COND_VAL_EQ} }->[0] ) }++;
+            elsif ( defined $cond->{GET_COND_VAL_EQ} ) {
+                $tables{ get_column_table( { $cond->{GET_COND_VAL_EQ} }->[0] ) }++;
             }
-            elsif ( defined $cond->{COND_VAL_NEQ} ) {
-                $tables{ get_column_table( { $cond->{COND_VAL_NEQ} }->[0] ) }++;
+            elsif ( defined $cond->{GET_COND_VAL_NEQ} ) {
+                $tables{ get_column_table( { $cond->{GET_COND_VAL_NEQ} }->[0] ) }++;
             }
-            elsif ( defined $cond->{COND_VAL_GT} ) {
-                $tables{ get_column_table( { $cond->{COND_VAL_GT} }->[0] ) }++;
+            elsif ( defined $cond->{GET_COND_VAL_GT} ) {
+                $tables{ get_column_table( { $cond->{GET_COND_VAL_GT} }->[0] ) }++;
             }
-            elsif ( defined $cond->{COND_VAL_LT} ) {
-                $tables{ get_column_table( { $cond->{COND_VAL_LT} }->[0] ) }++;
+            elsif ( defined $cond->{GET_COND_VAL_LT} ) {
+                $tables{ get_column_table( { $cond->{GET_COND_VAL_LT} }->[0] ) }++;
             }
         }
     }
@@ -296,6 +322,13 @@ sub list_tables {
 
     \@tables;
 
+}
+
+# --------------------------------------------
+sub get_column_alias_ref {
+    my ($self) = @_;
+    my @col = map { $_->{GET_DATA_ALIAS} } @{ $self->data->{GET_DATA} };
+    \@col;
 }
 
 # --------------------------------------------
@@ -324,25 +357,25 @@ sub _verify_data {
         goto RETURN;
     }
 
-    if ( !( defined $dataref->{DATA_COLUMN} || defined $dataref->{DATA_COUNT} ) ) {
+    if ( !( defined $dataref->{GET_DATA_COLUMN} || defined $dataref->{GET_DATA_COUNT} ) ) {
         goto RETURN;
     }
 
-    if ( defined $dataref->{DATA_COLUMN} ) {
+    if ( defined $dataref->{GET_DATA_COLUMN} ) {
     }
 
-    if ( defined $dataref->{DATA_COUNT} ) {
+    if ( defined $dataref->{GET_DATA_COUNT} ) {
     }
 
-    if ( defined $dataref->{DATA_ALIAS} ) {
+    if ( defined $dataref->{GET_DATA_ALIAS} ) {
 
         # Check on alias name
     }
 
-    if ( defined $dataref->{DATA_OP_PLUS}
-        || defined $dataref->{DATA_OP_MINUS}
-        || defined $dataref->{DATA_OP_MULT}
-        || defined $dataref->{DATA_OP_DIV}
+    if ( defined $dataref->{GET_DATA_OP_PLUS}
+        || defined $dataref->{GET_DATA_OP_MINUS}
+        || defined $dataref->{GET_DATA_OP_MULT}
+        || defined $dataref->{GET_DATA_OP_DIV}
       ) {
 
         # Check on alias name

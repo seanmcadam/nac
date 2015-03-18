@@ -2,17 +2,30 @@
 
 package NAC::DataRequest::Logger;
 
+use Data::Dumper;
 use base qw ( Exporter );
+use Carp;
+use Sys::Hostname;
 use FindBin;
 use lib "$FindBin::Bin/../..";
 use NAC::DataRequest;
 use strict;
 
+use constant LOGGER_DEBUG_LEVEL   => 'LOGGER_DEBUG_LEVEL';
+use constant LOGGER_LEVEL         => 'LOGGER_LEVEL';
+use constant LOGGER_EVENT         => 'LOGGER_EVENT';
+use constant LOGGER_MESSAGE       => 'LOGGER_MESSAGE';
+use constant LOGGER_HOSTNAME      => 'LOGGER_HOSTNAME';
+use constant LOGGER_PROGRAM       => 'LOGGER_PROGRAM';
+use constant LOGGER_PID           => 'LOGGER_PID';
+use constant LOGGER_PACKAGE       => 'LOGGER_PACKAGE';
+use constant LOGGER_SUBROUTINE    => 'LOGGER_SUBROUTINE';
+use constant LOGGER_FILE          => 'LOGGER_FILE';
+use constant LOGGER_LINE          => 'LOGGER_LINE';
 use constant LOG_PARM_LEVEL       => 'LOG_PARM_LEVEL';
 use constant LOG_PARM_EVENT       => 'LOG_PARM_EVENT';
 use constant LOG_PARM_MESSAGE     => 'LOG_PARM_MESSAGE';
 use constant LOG_PARM_PACKAGE     => 'LOG_PARM_PACKAGE';
-use constant LOG_PARM_PROGRAM     => 'LOG_PARM_PROGRAM';
 use constant LOG_PARM_SUBROUTINE  => 'LOG_PARM_SUBROUTINE';
 use constant LOG_PARM_HOSTNAME    => 'LOG_PARM_HOSTNAME';
 use constant LOG_PARM_FILE        => 'LOG_PARM_FILE';
@@ -25,18 +38,17 @@ use constant LOG_LEVEL_WARN       => 'LOG_WARN';
 use constant LOG_LEVEL_NOTICE     => 'LOG_NOTICE';
 use constant LOG_LEVEL_INFO       => 'LOG_INFO';
 use constant LOG_LEVEL_DEBUG      => 'LOG_DEBUG';
-use constant LOG_DEBUG_LEVEL      => 'LOG_DEBUG_LEVEL';
+use constant LOG_DEBUG_LEVEL_0    => 'DEBUG_LEVEL_0';         # Tiny Debug
+use constant LOG_DEBUG_LEVEL_1    => 'DEBUG_LEVEL_1';         # Sparse Debug
+use constant LOG_DEBUG_LEVEL_2    => 'DEBUG_LEVEL_2';         # Light Debug
+use constant LOG_DEBUG_LEVEL_3    => 'DEBUG_LEVEL_3';         # Moderate Debug
+use constant LOG_DEBUG_LEVEL_4    => 'DEBUG_LEVEL_4';         # Medium Debug
+use constant LOG_DEBUG_LEVEL_5    => 'DEBUG_LEVEL_5';         # Verbose Debug
+use constant LOG_DEBUG_LEVEL_6    => 'DEBUG_LEVEL_6';         # Very Verbose Debug
+use constant LOG_DEBUG_LEVEL_7    => 'DEBUG_LEVEL_7';         # Heavy Debug
+use constant LOG_DEBUG_LEVEL_8    => 'DEBUG_LEVEL_8';         # Painful Debug
+use constant LOG_DEBUG_LEVEL_9    => 'DEBUG_LEVEL_9';         # So Very Painful Debug
 use constant LOG_DEBUG_LEVEL_NONE => 'DEBUG_LEVEL_NONE';
-use constant LOG_DEBUG_LEVEL_0    => 'DEBUG_LEVEL_0';       # Tiny Debug
-use constant LOG_DEBUG_LEVEL_1    => 'DEBUG_LEVEL_1';       # Sparse Debug
-use constant LOG_DEBUG_LEVEL_2    => 'DEBUG_LEVEL_2';       # Light Debug
-use constant LOG_DEBUG_LEVEL_3    => 'DEBUG_LEVEL_3';       # Moderate Debug
-use constant LOG_DEBUG_LEVEL_4    => 'DEBUG_LEVEL_4';       # Medium Debug
-use constant LOG_DEBUG_LEVEL_5    => 'DEBUG_LEVEL_5';       # Verbose Debug
-use constant LOG_DEBUG_LEVEL_6    => 'DEBUG_LEVEL_6';       # Very Verbose Debug
-use constant LOG_DEBUG_LEVEL_7    => 'DEBUG_LEVEL_7';       # Heavy Debug
-use constant LOG_DEBUG_LEVEL_8    => 'DEBUG_LEVEL_8';       # Painful Debug
-use constant LOG_DEBUG_LEVEL_9    => 'DEBUG_LEVEL_9';       # So Very Painful Debug
 
 use constant EVENT_START                  => 'EVENT_START';
 use constant EVENT_STOP                   => 'EVENT_STOP';
@@ -102,7 +114,7 @@ use constant EVENT_SMTP_FAIL              => 'EVENT_SMTP_FAIL';
 use constant EVENT_LOGIC_FAIL             => 'EVENT_LOGIC_FAIL';
 use constant EVENT_EVAL_FAIL              => 'EVENT_EVAL_FAIL';
 use constant EVENT_FUNC_FAIL              => 'EVENT_FUNC_FAIL';
-use constant EVENT_CRIT                    => 'EVENT_CRIT';
+use constant EVENT_CRIT                   => 'EVENT_CRIT';
 use constant EVENT_ERR                    => 'EVENT_ERR';
 use constant EVENT_WARN                   => 'EVENT_WARN';
 use constant EVENT_NOTICE                 => 'EVENT_NOTICE';
@@ -222,7 +234,6 @@ our @EXPORT = qw(
   LOG_PARM_EVENT
   LOG_PARM_MESSAGE
   LOG_PARM_PACKAGE
-  LOG_PARM_PROGRAM
   LOG_PARM_SUBROUTINE
   LOG_PARM_FILE
   LOG_PARM_LINE
@@ -323,33 +334,46 @@ our @EXPORT = qw(
 
 our @ISA = qw(NAC::DataRequest);
 
+my $hostname = hostname();
+
 sub new {
-    my ( $class, $parms ) = @_;
+    my $class = shift @_;
+    my ($parms) = @_;
+
+    if ( !defined $parms ) { confess "NO PARMS VALUE\n"; }
+    if ( 'HASH' ne ref($parms) ) { confess "BAD PARMS VALUE\n"; }
+
+    if ( !defined $parms->{LOG_PARM_LEVEL} )      { confess "Failed on LOG_PARM_LEVEL" . Dumper @_; }
+    if ( !defined $parms->{LOG_PARM_PACKAGE} )    { confess "Failed on LOG_PARM_PACKAGE" . Dumper @_; }
+    if ( !defined $parms->{LOG_PARM_FILE} )       { confess "Failed on LOG_PARM_FILE" . Dumper @_; }
+    if ( !defined $parms->{LOG_PARM_LINE} )       { confess "Failed on LOG_PARM_LINE" . Dumper @_; }
+    if ( !defined $parms->{LOG_PARM_SUBROUTINE} ) { confess "Failed on LOG_PARM_SUBROUTINE" . Dumper @_; }
+    if ( !defined $parms->{LOG_PARM_EVENT} )      { confess "Failed on LOG_PARM_EVENT" . Dumper @_; }
 
     my $level       = $parms->{LOG_PARM_LEVEL};
     my $debug_level = $parms->{LOG_PARM_LEVEL};
     my $event       = $parms->{LOG_PARM_EVENT};
-    my $message     = $parms->{LOG_PARM_MESSAGE};
-    my $program     = $parms->{LOG_PARM_PROGRAM};
     my $package     = $parms->{LOG_PARM_PACKAGE};
-    my $hostname    = $parms->{LOG_PARM_HOSTNAME};
     my $file        = $parms->{LOG_PARM_FILE};
-    my $line        = $parms->{LOG_PARM_LINE};
     my $sub         = $parms->{LOG_PARM_SUBROUTINE};
+    my $line        = $parms->{LOG_PARM_LINE};
+    my $message     = (defined $parms->{LOG_PARM_MESSAGE})?$parms->{LOG_PARM_MESSAGE}:'';
 
     my $data = {};
-    $data->{LOG_LEVEL}       = $level;
-    $data->{LOG_DEBUG_LEVEL} = $debug_level;
-    $data->{LOG_EVENT}       = $event;
-    $data->{LOG_MESSAGE}     = $message;
-    $data->{LOG_HOSTNAME}    = $hostname;
-    $data->{LOG_PROGRAM}     = $program;
-    $data->{LOG_PACKAGE}     = $package;
-    $data->{LOG_FILE}        = $file;
-    $data->{LOG_LINE}        = $line;
-    $data->{LOG_SUBROUTINE}  = $sub;
+    $data->{LOGGER_LEVEL}       = $level;
+    $data->{LOGGER_DEBUG_LEVEL} = $debug_level;
+    $data->{LOGGER_EVENT}       = $event;
+    $data->{LOGGER_MESSAGE}     = $message;
+    $data->{LOGGER_HOSTNAME}    = $hostname;
+    $data->{LOGGER_PROGRAM}     = $0;
+    $data->{LOGGER_PID}         = $$;
+    $data->{LOGGER_PACKAGE}     = $package;
+    $data->{LOGGER_FILE}        = $file;
+    $data->{LOGGER_LINE}        = $line;
+    $data->{LOGGER_SUBROUTINE}  = $sub;
 
-    my $self = $class->SUPER::new( $class, $data );
+    my $self = $class->SUPER::new( { REQUEST_DATA => $data } );
+
     bless $self, $class;
     $self;
 }
@@ -357,61 +381,61 @@ sub new {
 # ----------------------------------
 sub level {
     my ($self) = @_;
-    $self->data->{LOG_LEVEL};
+    $self->data()->{LOGGER_LEVEL};
 }
 
 # ----------------------------------
 sub debug_level {
     my ($self) = @_;
-    $self->data->{LOG_DEBUG_LEVEL};
+    $self->data->{LOGGER_DEBUG_LEVEL};
 }
 
 # ----------------------------------
 sub event {
     my ($self) = @_;
-    $self->data->{LOG_EVENT};
+    $self->data->{LOGGER_EVENT};
 }
 
 # ----------------------------------
 sub message {
     my ($self) = @_;
-    $self->data->{LOG_EVENT};
+    $self->data->{LOGGER_MESSAGE};
 }
 
 # ----------------------------------
-sub hostname {
+sub host {
     my ($self) = @_;
-    $self->data->{LOG_HOSTNAME};
+    $self->data->{LOGGER_HOSTNAME};
 }
 
 # ----------------------------------
 sub program {
     my ($self) = @_;
-    $self->data->{LOG_PROGRAM};
+    $self->data->{LOGGER_PROGRAM};
 }
 
 # ----------------------------------
 sub package {
     my ($self) = @_;
-    $self->data->{LOG_PACKAGE};
+    $self->data->{LOGGER_PACKAGE};
 }
 
 # ----------------------------------
 sub subroutine {
     my ($self) = @_;
-    $self->data->{LOG_SUBROUTINE};
+    $self->data->{LOGGER_SUBROUTINE};
 }
 
 # ----------------------------------
 sub file {
     my ($self) = @_;
-    $self->data->{LOG_FILE};
+    $self->data->{LOGGER_FILE};
 }
 
 # ----------------------------------
 sub line {
     my ($self) = @_;
-    $self->data->{LOG_LINE};
+    $self->data->{LOGGER_LINE};
 }
 
 1;

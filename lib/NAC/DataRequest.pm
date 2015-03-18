@@ -15,20 +15,52 @@ use constant DATAREQUEST_COUNT => 'DATAREQUEST_COUNT';
 use constant DATAREQUEST_PID   => 'DATAREQUEST_PID';
 use constant DATAREQUEST_DATA  => 'DATAREQUEST_DATA';
 use constant DATAREQUEST_CLASS => 'DATAREQUEST_CLASS';
+use constant REQUEST_DATA      => 'REQUEST_DATA';
+use constant REQUEST_JSON      => 'REQUEST_JSON';
 
 our @EXPORT = qw (
+  REQUEST_DATA
+  REQUEST_JSON
 );
 
 state $request_num = 0;
 
 # ---------------------------------------
 sub new {
-    my ( $class, $package, $data ) = @_;
+    my ( $class, $ref ) = @_;
     my $self = {};
-    $self->{DATAREQUEST_PID}   = $$;
-    $self->{DATAREQUEST_COUNT} = $request_num++;
-    $self->{DATAREQUEST_DATA}  = $data;
-    $self->{DATAREQUEST_CLASS} = $package;
+
+    if ( 'HASH' ne ref($ref) ) {
+        confess " NON HASH REF PASSED IN " . Dumper @_;
+    }
+
+    if ( defined $ref->{REQUEST_DATA} ) {
+        my $data = $ref->{REQUEST_DATA};
+        $self->{DATAREQUEST_PID}   = $$;
+        $self->{DATAREQUEST_COUNT} = $request_num++;
+        $self->{DATAREQUEST_DATA}  = $data;
+        $self->{DATAREQUEST_CLASS} = $class;
+    }
+    elsif ( defined $ref->{REQUEST_JSON} ) {
+        my $json = $ref->{REQUEST_JSON};
+
+        my $arrref = decode_json($$json);
+
+        if ( !defined $arrref->{DATAREQUEST_DATA} ) {
+            confess DATAREQUEST_DATA . " not defined\n";
+        }
+        elsif ( !defined $arrref->{DATAREQUEST_CLASS} ) {
+            confess DATAREQUEST_CLASS . " not defined\n";
+        }
+        else {
+            $class = $self->{DATAREQUEST_CLASS} = $arrref->{DATAREQUEST_CLASS};
+            $self->{DATAREQUEST_DATA}  = $arrref->{DATAREQUEST_DATA};
+            $self->{DATAREQUEST_COUNT} = ( defined $arrref->{DATAREQUEST_COUNT} ) ? $arrref->{DATAREQUEST_COUNT} : 0;
+            $self->{DATAREQUEST_PID}   = ( defined $arrref->{DATAREQUEST_PID} ) ? $arrref->{DATAREQUEST_PID} : 0;
+
+        }
+    }
+
     bless $self, $class;
     $self;
 }
@@ -49,31 +81,6 @@ sub get_json {
     my $json = JSON->new->allow_nonref->encode($data);
 
     \$json;
-}
-
-# ---------------------------------------
-# Used on Recieve side to create object
-# ---------------------------------------
-sub set_json {
-    my ( $self, $json ) = @_;
-
-    my $arrref = decode_json($$json);
-
-    if ( !defined $arrref->{DATAREQUEST_DATA} ) {
-        carp DATAREQUEST_DATA . " not defined\n";
-    }
-    elsif ( !defined $arrref->{DATAREQUEST_CLASS} ) {
-        carp DATAREQUEST_CLASS . " not defined\n";
-    }
-
-    my $class = $self->{DATAREQUEST_CLASS} = $arrref->{DATAREQUEST_CLASS};
-    $self->{DATAREQUEST_DATA}  = $arrref->{DATAREQUEST_DATA};
-    $self->{DATAREQUEST_COUNT} = ( defined $arrref->{DATAREQUEST_COUNT} ) ? $arrref->{DATAREQUEST_COUNT} : 0;
-    $self->{DATAREQUEST_PID}   = ( defined $arrref->{DATAREQUEST_PID} ) ? $arrref->{DATAREQUEST_PID} : 0;
-
-    bless $self, $class;
-    $self;
-
 }
 
 # ---------------------------------------
@@ -99,17 +106,5 @@ sub count {
     my ($self) = @_;
     $self->{DATAREQUEST_COUNT};
 }
-
-# ---------------------------------------
-#sub add_request_data {
-#	my ($self,$name,$var) = @_;
-#	$self->{$name} = $var;
-#}
-
-# ---------------------------------------
-#sub get_request_data {
-#	my ($self,$name) = @_;
-#	$self->{$name};
-#}
 
 1;

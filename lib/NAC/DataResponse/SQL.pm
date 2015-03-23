@@ -36,6 +36,9 @@ sub new {
     if( ! defined $parms ) {
 	$LOGGER_FATAL->( "NO PARMS DEFINED" );
     }
+    
+    my %data;
+    my $self = $class->SUPER::new(\%data);
 
     if ( !defined $parms->{SQL_RESPONSE_NUM} || !isdigit( $parms->{SQL_RESPONSE_NUM} ) ) {
         $LOGGER_ERROR->("BAD SQL_RESPONSE_NUM VALUE\n" . Dumper $parms );
@@ -73,7 +76,6 @@ sub new {
         $self->{SQL_ERROR} = "NO SQL COMMAND";
 	}
 
-    my $self = $class->SUPER::new(\%data);
     bless $self, $class;
 
     $self;

@@ -11,6 +11,7 @@ use SQL::Parser;
 use SQL::Statement;
 use FindBin;
 use lib "$FindBin::Bin/../..";
+use NAC::LocalLogger;
 use strict;
 
 use constant 'SQL_REQUEST_NUM' => 'SQL_REQUEST_NUM';
@@ -60,12 +61,7 @@ sub new {
     $data->{SQL_REQUEST_NUM} = $request++;
     $data->{SQL_REQUEST_PID} = $$;
 
-
-# print $stmt;
-
     my $stmt = SQL::Statement->new($stmt,$parser);
-    print Dumper $stmt;
-exit;
 
     my $self = $class->SUPER::new( $class, $data );
     bless $self, $class;

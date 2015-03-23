@@ -1,5 +1,9 @@
 #!/usr/bin/perl
-
+#
+#
+# Used as a base class to connect to a Database
+# and provide common DB access routines and error handling
+#
 package NAC::Worker::DB;
 
 use Data::Dumper;
@@ -48,9 +52,13 @@ my $db     = 'mysql';
 sub dbh_init {
     my ($parms) = @_;
 
+
     if ($DBH) { return; }
 
+    $LOGGER_DEBUG_2->( EVENT_START, "INIT DB" );
+
     $INIT = 1;
+
 
     if ( 'HASH' eq ref($parms) ) {
         $server = $parms->{DB_SERVER} if ( defined $parms->{DB_SERVER} );
@@ -59,6 +67,8 @@ sub dbh_init {
         $pass   = $parms->{DB_PASS}   if ( defined $parms->{DB_PASS} );
         $db     = $parms->{DB_NAME}   if ( defined $parms->{DB_NAME} );
     }
+
+    $LOGGER_DEBUG_9->( "DB Settings: $server, $port, $user, $db" );
 
     $db_source = "dbi:mysql:"
       . "dbname=$db;"
@@ -95,6 +105,8 @@ sub db_connect {
             ) ) ) {
         $LOGGER_FATAL->( " CONNECT DB FAILED " . $DBI::errstr );
     }
+
+    $LOGGER_DEBUG_2->( "DB Connected" );
 }
 
 sub DBH {

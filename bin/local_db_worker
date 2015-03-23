@@ -5,15 +5,17 @@ use Data::Dumper;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use NAC::Worker::Thread;
-use NAC::Worker::LocalDB;
+use NAC::Worker::LocalRODB;
+use NAC::Worker::LocalBufferDB;
 use strict;
 
-# use constant LOCAL_DB_THREAD_COUNT => 10;
-use constant LOCAL_DB_THREAD_COUNT => 1;
+use constant LOCAL_DB_THREAD_COUNT => 10;
+# use constant LOCAL_DB_THREAD_COUNT => 1;
 
 my $thread = NAC::Worker::Thread->new();
 for my $i ( 1 .. LOCAL_DB_THREAD_COUNT ) {
-  $thread->create( \&NAC::Worker::LocalDB::new );
+  $thread->create( \&NAC::Worker::LocalRODB::new );
+  $thread->create( \&NAC::Worker::LocalBufferDB::new );
 }
 $thread->run();
 

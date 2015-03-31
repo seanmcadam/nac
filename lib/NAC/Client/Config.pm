@@ -16,15 +16,16 @@ use strict;
 
 our @ISA = qw(NAC::Client);
 
+use constant CONFIG_ID_COL                  => 0;
+use constant CONFIG_HOSTNAME_COL            => 1;
+use constant CONFIG_NAME_COL                => 2;
+use constant CONFIG_VALUE_COL               => 3;
+
 use constant CONFIG_RESULT                  => 'CONFIG_RESULT';
 use constant CONFIG_ID                      => 'CONFIG_ID';
 use constant CONFIG_NAME                    => 'CONFIG_NAME';
 use constant CONFIG_VALUE                   => 'CONFIG_VALUE';
 use constant CONFIG_HOSTNAME                => 'CONFIG_HOSTNAME';
-use constant CONFIG_ID_COL                  => 0;
-use constant CONFIG_HOSTNAME_COL            => 1;
-use constant CONFIG_NAME_COL                => 2;
-use constant CONFIG_VALUE_COL               => 3;
 use constant HOSTNAME_BLANK                 => 'HOSTNAME_BLANK';
 use constant NAC_MASTER_WRITE_HOSTNAME      => 'NAC_MASTER_WRITE_HOSTNAME';
 use constant NAC_MASTER_WRITE_PORT          => 'NAC_MASTER_WRITE_PORT';
@@ -130,6 +131,11 @@ sub new {
 # ---------------------------------------------
 sub _result {
     my ($self) = @_;
+
+    if ( !defined $self->{CONFIG_RESULT} || 'NAC::DataResponse::Config' ne ref( $self->{CONFIG_RESULT} ) ) {
+        $LOGGER_FATAL->("RESULT SET NOT DEFINED");
+    }
+
     return $self->{CONFIG_RESULT};
 }
 
@@ -161,26 +167,49 @@ sub do {
     } );
 
     if ( !( $self->{CONFIG_RESULT} = $self->SUPER::do( GET_CONFIG_DATA_FUNCTION, $sqlobj ) ) ) {
-        $LOGGER_FATAL->("UNABLE TO GET CONFIG DATA");
+        $LOGGER_FATAL->("UNABLE TO GET CONFIG DATA ");
     }
 
 }
 
 # ---------------------------------------------
-sub get_id_value {
-    my ( $self, $id ) = @_;
+sub get_rows {
+    my ( $self, $parms ) = @_;
 
-    if ( !defined $id || isdigit($id) ) {
-        $LOGGER_FATAL->("BAD ID PROVIDED, '$id'");
+    if ( defined $parms && ( 'HASH' ne ref($parms) ) ) {
+        $LOGGER_FATAL->("PARM NOT HASH");
     }
 
-    my ($row) = @{ $self->get( { CONFIG_ID => $id } ) };
+    return $self->get($parms);
 
-    if ( !defined $row ) {
-        $LOGGER_WARN->("ID PROVIDED DOES NOT EXIST, $id");
+}
+
+# ---------------------------------------------
+sub get_row {
+    my ( $self, $parms ) = @_;
+
+    if ( defined $parms && ( 'HASH' ne ref($parms) ) ) {
+        $LOGGER_FATAL->("PARM NOT HASH");
     }
 
-    return ( defined $row ) ? $row->[CONFIG_VALUE_COL] : undef;
+    my ($row) = @{ $self->get($parms) };
+
+    return ($row) ? $row : undef;
+
+}
+
+# ---------------------------------------------
+sub get_ids {
+    my ($self) = @_;
+    my @ret = ();
+
+    my $ref = $self->get();
+
+    foreach my $rowref ( @{$ref} ) {
+        push( @ret, $rowref->[CONFIG_ID_COL] );
+    }
+
+    \@ret;
 }
 
 # ---------------------------------------------
@@ -194,45 +223,11 @@ sub get_value {
     my ($row) = @{ $self->get($parms) };
 
     if ( !defined $row ) {
-        $LOGGER_DEBUG_1->("PARMS PROVIDED DOES NOT EXIST");
+        $LOGGER_WARN->( "NO VALUE EXISTS FOR: " . ( ( defined $parms ) ? ( Dumper $parms) : 'undef' ) );
+        return undef;
     }
 
-    return ( defined $row ) ? $row->[CONFIG_VALUE_COL] : undef;
-}
-
-# ---------------------------------------------
-sub get_id {
-    my ( $self, $parms ) = @_;
-
-    if ( defined $parms && ( 'HASH' ne ref($parms) ) ) {
-        $LOGGER_FATAL->("PARM NOT HASH");
-    }
-
-    my ($row) = @{ $self->get($parms) };
-
-    if ( !defined $row ) {
-        $LOGGER_DEBUG_1->("PARMS PROVIDED DO NOT EXIST");
-    }
-
-    return ( defined $row ) ? $row->[CONFIG_ID_COL] : undef;
-}
-
-# ---------------------------------------------
-sub get_ids {
-    my ( $self, $parms ) = @_;
-
-    if ( defined $parms && ( 'HASH' ne ref($parms) ) ) {
-        $LOGGER_FATAL->("PARM NOT HASH");
-    }
-
-    my @ids = ();
-    my $ref = $self->get($parms);
-
-    foreach my $row ( @{$ref} ) {
-        push( @ids, $row->[CONFIG_ID_COL] );
-    }
-
-    \@ids;
+    return $row->[CONFIG_VALUE_COL];
 }
 
 # ---------------------------------------------
@@ -268,9 +263,8 @@ sub get {
         $LOGGER_DEBUG_7->(" GET CONFIG_NAME => $name");
     }
 
-    print Dumper $self->_result;
-    exit;
-    $self->_result->set_first_row();
+
+    $self->_result->first_row();
 
     while ( my $row = $self->_result->next_row() ) {
         if ( ( !$configid || $configid == $row->[CONFIG_ID_COL] )

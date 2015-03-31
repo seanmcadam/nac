@@ -10,6 +10,7 @@ use NAC::LocalLogger;
 use NAC::DataResponse;
 use strict;
 
+
 use constant 'SQL_RESPONSE_NUM' => 'SQL_RESPONSE_NUM';
 use constant 'SQL_RESPONSE_PID' => 'SQL_RESPONSE_PID';
 use constant 'SQL_SELECT'       => 'SQL_SELECT';

@@ -44,22 +44,24 @@ sub new {
     elsif ( defined $ref->{REQUEST_JSON} ) {
         my $json = $ref->{REQUEST_JSON};
 
-        my $arrref = decode_json($$json);
 
-        if ( !defined $arrref->{DATAREQUEST_DATA} ) {
+        if ( !defined $json->{DATAREQUEST_DATA} ) {
             confess DATAREQUEST_DATA . " not defined\n";
         }
-        elsif ( !defined $arrref->{DATAREQUEST_CLASS} ) {
+        elsif ( !defined $json->{DATAREQUEST_CLASS} ) {
             confess DATAREQUEST_CLASS . " not defined\n";
         }
         else {
-            $class = $self->{DATAREQUEST_CLASS} = $arrref->{DATAREQUEST_CLASS};
-            $self->{DATAREQUEST_DATA}  = $arrref->{DATAREQUEST_DATA};
-            $self->{DATAREQUEST_COUNT} = ( defined $arrref->{DATAREQUEST_COUNT} ) ? $arrref->{DATAREQUEST_COUNT} : 0;
-            $self->{DATAREQUEST_PID}   = ( defined $arrref->{DATAREQUEST_PID} ) ? $arrref->{DATAREQUEST_PID} : 0;
+            # $class = $self->{DATAREQUEST_CLASS} = $json->{DATAREQUEST_CLASS};
+            $self->{DATAREQUEST_DATA}  = $json->{DATAREQUEST_DATA};
+            $self->{DATAREQUEST_COUNT} = ( defined $json->{DATAREQUEST_COUNT} ) ? $json->{DATAREQUEST_COUNT} : 0;
+            $self->{DATAREQUEST_PID}   = ( defined $json->{DATAREQUEST_PID} ) ? $json->{DATAREQUEST_PID} : 0;
 
         }
     }
+    else {
+	confess;
+	}
 
     bless $self, $class;
     $self;

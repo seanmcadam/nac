@@ -52,7 +52,6 @@ my $db     = 'mysql';
 sub dbh_init {
     my ($parms) = @_;
 
-
     if ($DBH) { return; }
 
     $LOGGER_DEBUG_2->( EVENT_START, "INIT DB" );

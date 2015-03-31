@@ -15,7 +15,7 @@ our @ISA = qw(NAC::Worker::Function);
 
 sub new {
     my ( $class, $parms ) = @_;
-    my $self = $class->SUPER::new( GET_CONFIG_DATA_FUNCTION, \&function );
+    my $self = $class->SUPER::new( GET_CONFIG_DATA_FUNCTION, \&function, $parms );
     bless $self, $class;
     $self;
 }

@@ -337,42 +337,48 @@ our @ISA = qw(NAC::DataRequest);
 my $hostname = hostname();
 
 sub new {
-    my $class = shift @_;
-    my ($parms) = @_;
+    my ( $class, $parms ) = @_;
+    my $self;
 
     if ( !defined $parms ) { confess "NO PARMS VALUE\n"; }
     if ( 'HASH' ne ref($parms) ) { confess "BAD PARMS VALUE\n"; }
 
-    if ( !defined $parms->{LOG_PARM_LEVEL} )      { confess "Failed on LOG_PARM_LEVEL" . Dumper @_; }
-    if ( !defined $parms->{LOG_PARM_PACKAGE} )    { confess "Failed on LOG_PARM_PACKAGE" . Dumper @_; }
-    if ( !defined $parms->{LOG_PARM_FILE} )       { confess "Failed on LOG_PARM_FILE" . Dumper @_; }
-    if ( !defined $parms->{LOG_PARM_LINE} )       { confess "Failed on LOG_PARM_LINE" . Dumper @_; }
-    if ( !defined $parms->{LOG_PARM_SUBROUTINE} ) { confess "Failed on LOG_PARM_SUBROUTINE" . Dumper @_; }
-    if ( !defined $parms->{LOG_PARM_EVENT} )      { confess "Failed on LOG_PARM_EVENT" . Dumper @_; }
+    if ( defined $parms->{REQUEST_JSON} ) {
+        $self = $class->SUPER::new( { REQUEST_JSON => $parms->{REQUEST_JSON} } );
+    }
+    else {
 
-    my $level       = $parms->{LOG_PARM_LEVEL};
-    my $debug_level = $parms->{LOG_PARM_LEVEL};
-    my $event       = $parms->{LOG_PARM_EVENT};
-    my $package     = $parms->{LOG_PARM_PACKAGE};
-    my $file        = $parms->{LOG_PARM_FILE};
-    my $sub         = $parms->{LOG_PARM_SUBROUTINE};
-    my $line        = $parms->{LOG_PARM_LINE};
-    my $message     = (defined $parms->{LOG_PARM_MESSAGE})?$parms->{LOG_PARM_MESSAGE}:'';
+        if ( !defined $parms->{LOG_PARM_LEVEL} )      { confess "Failed on LOG_PARM_LEVEL: " . Dumper @_; }
+        if ( !defined $parms->{LOG_PARM_PACKAGE} )    { confess "Failed on LOG_PARM_PACKAGE " . Dumper @_; }
+        if ( !defined $parms->{LOG_PARM_FILE} )       { confess "Failed on LOG_PARM_FILE " . Dumper @_; }
+        if ( !defined $parms->{LOG_PARM_LINE} )       { confess "Failed on LOG_PARM_LINE " . Dumper @_; }
+        if ( !defined $parms->{LOG_PARM_SUBROUTINE} ) { confess "Failed on LOG_PARM_SUBROUTINE " . Dumper @_; }
+        if ( !defined $parms->{LOG_PARM_EVENT} )      { confess "Failed on LOG_PARM_EVENT " . Dumper @_; }
 
-    my $data = {};
-    $data->{LOGGER_LEVEL}       = $level;
-    $data->{LOGGER_DEBUG_LEVEL} = $debug_level;
-    $data->{LOGGER_EVENT}       = $event;
-    $data->{LOGGER_MESSAGE}     = $message;
-    $data->{LOGGER_HOSTNAME}    = $hostname;
-    $data->{LOGGER_PROGRAM}     = $0;
-    $data->{LOGGER_PID}         = $$;
-    $data->{LOGGER_PACKAGE}     = $package;
-    $data->{LOGGER_FILE}        = $file;
-    $data->{LOGGER_LINE}        = $line;
-    $data->{LOGGER_SUBROUTINE}  = $sub;
+        my $level       = $parms->{LOG_PARM_LEVEL};
+        my $debug_level = $parms->{LOG_PARM_LEVEL};
+        my $event       = $parms->{LOG_PARM_EVENT};
+        my $package     = $parms->{LOG_PARM_PACKAGE};
+        my $file        = $parms->{LOG_PARM_FILE};
+        my $sub         = $parms->{LOG_PARM_SUBROUTINE};
+        my $line        = $parms->{LOG_PARM_LINE};
+        my $message     = ( defined $parms->{LOG_PARM_MESSAGE} ) ? $parms->{LOG_PARM_MESSAGE} : '';
 
-    my $self = $class->SUPER::new( { REQUEST_DATA => $data } );
+        my $data = {};
+        $data->{LOGGER_LEVEL}       = $level;
+        $data->{LOGGER_DEBUG_LEVEL} = $debug_level;
+        $data->{LOGGER_EVENT}       = $event;
+        $data->{LOGGER_MESSAGE}     = $message;
+        $data->{LOGGER_HOSTNAME}    = $hostname;
+        $data->{LOGGER_PROGRAM}     = $0;
+        $data->{LOGGER_PID}         = $$;
+        $data->{LOGGER_PACKAGE}     = $package;
+        $data->{LOGGER_FILE}        = $file;
+        $data->{LOGGER_LINE}        = $line;
+        $data->{LOGGER_SUBROUTINE}  = $sub;
+
+        $self = $class->SUPER::new( { REQUEST_DATA => $data } );
+    }
 
     bless $self, $class;
     $self;

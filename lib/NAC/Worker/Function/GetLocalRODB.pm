@@ -18,7 +18,7 @@ our @ISA = qw(NAC::Worker::Function);
 
 sub new {
     my ( $class, $parms ) = @_;
-    my $self = $class->SUPER::new( GET_LOCAL_RODB_FUNCTION, \&function );
+    my $self = $class->SUPER::new( GET_LOCAL_RODB_FUNCTION, \&function, $parms );
     bless $self, $class;
     $self;
 }

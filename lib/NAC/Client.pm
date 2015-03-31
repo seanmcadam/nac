@@ -4,13 +4,15 @@ package NAC::Client;
 
 use Data::Dumper;
 use Carp;
+use JSON;
 use base qw( Exporter );
 use Storable qw(freeze thaw);
 use Gearman::XS qw(:constants);
 use Gearman::XS::Client;
 use FindBin;
-use lib "$FindBin::Bin/../..";
+use lib "$FindBin::Bin/..";
 use NAC::LocalLogger;
+use NAC::DataResponse::Config;
 use strict;
 use 5.010;
 
@@ -47,7 +49,8 @@ sub do_background {
     my ( $ret, $handle ) = $self->{CLIENT}->do_background( $function, freeze( $data_obj->get_json ) );
     if ( $ret != GEARMAN_SUCCESS ) {
         carp "Failure background sending to Server: $ret\n";
-	# $LOGGER_ERROR->( " FAILED TO SEND TO SERVER in BACKGROUND " );
+
+        # $LOGGER_ERROR->( " FAILED TO SEND TO SERVER in BACKGROUND " );
     }
 }
 
@@ -56,13 +59,37 @@ sub do_background {
 # ---------------------------------------------------------------------------
 sub do {
     my ( $self, $function, $data_obj ) = @_;
+
     my ( $ret, $result ) = $self->{CLIENT}->do( $function, freeze( $data_obj->get_json ) );
+
     if ( $ret != GEARMAN_SUCCESS ) {
         carp "Failure sending to Server $ret\n";
-	# $LOGGER_ERROR->( " FAILED TO SEND TO SERVER " );
-	return 0;
+        # $LOGGER_ERROR->( " FAILED TO SEND TO SERVER " );
+        return undef;
     }
-    return thaw( $result );
+
+    my $json    = thaw($result);
+    my $jsonref = decode_json($$json);
+
+	#
+	# Check for Error Response Here
+	#
+
+    if ( !defined $jsonref->{DATARESPONSE_CLASS} ) {
+        carp "BAD DATARESPONSE JSONREF";
+        return undef;
+    }
+
+    my $myclass = $jsonref->{DATARESPONSE_CLASS};
+
+    if ( !( $myclass =~ /^NAC::DataResponse::/ ) ) {
+        carp "BAD CLASS '" . $myclass . "'\n";
+        return undef;
+    }
+
+    my $data = $myclass->new( { RESPONSE_JSON => $jsonref } );
+
+    return $data;
 }
 
 # ---------------------------------------------------------------------------

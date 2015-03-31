@@ -137,36 +137,48 @@ our $request = 1;
 #
 # ----------------------------------------------------------------
 sub new {
-    my ( $class, $dataref ) = @_;
+    my ( $class, $parms ) = @_;
+    my $self;
+    my %data = ();
 
-    if ( !defined $dataref ) {
+    if ( 'HASH' ne ref($parms) ) {
+        confess " NON HASH REF PASSED IN " . Dumper @_;
+    }
+
+    if ( !defined $parms ) {
         confess;
     }
 
     $LOGGER_DEBUG_8->( EVENT_START, );
 
-    my %data = ();
 
-    confess Dumper $dataref if ( ( !defined $dataref->{GET_DATA} ) || ( !_verify_data_array( $dataref->{GET_DATA} ) ) );
-    confess Dumper $dataref if ( ( defined $dataref->{GET_CONDITION} ) && ( !_verify_condition( $dataref->{GET_CONDITION} ) ) );
-    confess Dumper $dataref if ( ( defined $dataref->{GET_LIMIT} )     && ( !_verify_limit( $dataref->{GET_LIMIT} ) ) );
-    confess Dumper $dataref if ( ( defined $dataref->{GET_ORDER} )     && ( !_verify_order( $dataref->{GET_ORDER} ) ) );
+    if ( defined $parms->{REQUEST_JSON} ) {
+        $self = $class->SUPER::new( { REQUEST_JSON => $parms->{REQUEST_JSON} } );
+    }
+    else {
 
-    $data{GET_DATA} = $dataref->{GET_DATA};
+    confess Dumper $parms if ( ( !defined $parms->{GET_DATA} ) || ( !_verify_data_array( $parms->{GET_DATA} ) ) );
+    confess Dumper $parms if ( ( defined $parms->{GET_CONDITION} ) && ( !_verify_condition( $parms->{GET_CONDITION} ) ) );
+    confess Dumper $parms if ( ( defined $parms->{GET_LIMIT} )     && ( !_verify_limit( $parms->{GET_LIMIT} ) ) );
+    confess Dumper $parms if ( ( defined $parms->{GET_ORDER} )     && ( !_verify_order( $parms->{GET_ORDER} ) ) );
 
-    if ( defined $dataref->{GET_CONDITION} ) {
-        $data{GET_CONDITION} = $dataref->{GET_CONDITION};
+        $data{GET_DATA} = $parms->{GET_DATA};
+
+        if ( defined $parms->{GET_CONDITION} ) {
+            $data{GET_CONDITION} = $parms->{GET_CONDITION};
+        }
+
+        if ( defined $parms->{GET_LIMIT} ) {
+            $data{GET_LIMIT} = $parms->{GET_LIMIT};
+        }
+
+        if ( defined $parms->{GET_ORDER} ) {
+            $data{GET_ORDER} = $parms->{GET_ORDER};
+        }
+
+        $self = $class->SUPER::new( { REQUEST_DATA => \%data } );
     }
 
-    if ( defined $dataref->{GET_LIMIT} ) {
-        $data{GET_LIMIT} = $dataref->{GET_LIMIT};
-    }
-
-    if ( defined $dataref->{GET_ORDER} ) {
-        $data{GET_ORDER} = $dataref->{GET_ORDER};
-    }
-
-    my $self = $class->SUPER::new( { REQUEST_DATA => \%data } );
     bless $self, $class;
     $self;
 }

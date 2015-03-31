@@ -36,6 +36,7 @@ sub new {
     }
 
     if ( defined $ref->{RESPONSE_ERROR} ) {
+	confess;
 	}
     elsif ( defined $ref->{RESPONSE_DATA} ) {
         my $data = $ref->{RESPONSE_DATA};
@@ -47,21 +48,23 @@ sub new {
     elsif ( defined $ref->{RESPONSE_JSON} ) {
         my $json = $ref->{RESPONSE_JSON};
 
-        my $arrref = decode_json($$json);
-
-        if ( !defined $arrref->{DATARESPONSE_DATA} ) {
+        if ( !defined $json->{DATARESPONSE_DATA} ) {
             confess DATARESPONSE_DATA . " not defined\n";
         }
-        elsif ( !defined $arrref->{DATARESPONSE_CLASS} ) {
+        elsif ( !defined $json->{DATARESPONSE_CLASS} ) {
             confess DATARESPONSE_CLASS . " not defined\n";
         }
         else {
-        #    $class = $self->{DATARESPONSE_CLASS} = $arrref->{DATARESPONSE_CLASS};
-            $self->{DATARESPONSE_DATA}  = $arrref->{DATARESPONSE_DATA};
-            $self->{DATARESPONSE_COUNT} = ( defined $arrref->{DATARESPONSE_COUNT} ) ? $arrref->{DATARESPONSE_COUNT} : 0;
-            $self->{DATARESPONSE_PID}   = ( defined $arrref->{DATARESPONSE_PID} ) ? $arrref->{DATARESPONSE_PID} : 0;
+            $class = $json->{DATARESPONSE_CLASS};
+            $self->{DATARESPONSE_CLASS} = $json->{DATARESPONSE_CLASS};
+            $self->{DATARESPONSE_DATA}  = $json->{DATARESPONSE_DATA};
+            $self->{DATARESPONSE_COUNT} = ( defined $json->{DATARESPONSE_COUNT} ) ? $json->{DATARESPONSE_COUNT} : 0;
+            $self->{DATARESPONSE_PID}   = ( defined $json->{DATARESPONSE_PID} ) ? $json->{DATARESPONSE_PID} : 0;
         }
     }
+    else {
+	confess;
+	}
 
     bless $self, $class;
     $self;
